@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createEditClient, createEditServer } from '../lib/edit-protocol.mjs';
 
-function setup({ transport, apply = () => 'applied' } = {}) {
+function setup({ transport, apply = () => 'applied', now: suppliedNow } = {}) {
   let time = 0;
   let binding = {
     clientId: 'client', serverId: 'server', sessionId: 'session', fieldId: 'field',
@@ -10,7 +10,7 @@ function setup({ transport, apply = () => 'applied' } = {}) {
   };
   const log = [];
   const getBinding = () => binding;
-  const now = () => time;
+  const now = suppliedNow ?? (() => time);
   const server = createEditServer({
     getBinding, now,
     prepare(input) { log.push(['prepare', input]); return { text: input }; },
@@ -176,4 +176,57 @@ test('an expired Prepare cannot write, and an expired Ack cannot learn or replay
   beforeAck.advanceTime(120);
   assert.equal(beforeAck.client.step(), 'recovery');
   assert.deepEqual(beforeAck.log, [['prepare', '反映済み'], ['apply', '反映済み']]);
+});
+
+test('an Apply completed before the deadline can commit when time advances after the completion check', () => {
+  let time = 0;
+  let ackBy;
+  const { client, log } = setup({
+    now() {
+      const current = time;
+      // Model a scheduling pause after sampling the successful Apply at 119 ms.
+      if (current === 119) time = 121;
+      return current;
+    },
+    apply() { time = 119; return 'applied'; },
+    transport(server, verb, message) {
+      if (verb === 'ack') ackBy = message.ackBy;
+      return server.receive(verb, message);
+    },
+  });
+  client.begin('期限直前');
+  assert.equal(client.step(), 'pending');
+  assert.equal(client.step(), 'pending');
+  assert.equal(finish(client), 'committed');
+  assert.equal(ackBy, 239);
+  assert.deepEqual(log, [['prepare', '期限直前'], ['apply', '期限直前'], ['commit', '期限直前']]);
+  assert.equal(client.begin('次'), 2);
+});
+
+test('an Apply completed at or after its deadline requires recovery without commit', () => {
+  for (const completedAt of [120, 121]) {
+    const { client, log, advanceTime } = setup({
+      apply() { advanceTime(completedAt); return 'applied'; },
+    });
+    client.begin('期限超過');
+    assert.equal(client.step(), 'pending');
+    assert.equal(client.step(), 'recovery');
+    assert.deepEqual(log, [['prepare', '期限超過'], ['apply', '期限超過']]);
+    assert.throws(() => client.begin('次'));
+  }
+});
+
+test('a composition change during Apply requires recovery even when it finishes before the deadline', () => {
+  const { client, log, advanceTime, setBinding } = setup({
+    apply() {
+      advanceTime(119);
+      setBinding({ composition: 2 });
+      return 'applied';
+    },
+  });
+  client.begin('旧範囲');
+  assert.equal(client.step(), 'pending');
+  assert.equal(client.step(), 'recovery');
+  assert.deepEqual(log, [['prepare', '旧範囲'], ['apply', '旧範囲']]);
+  assert.throws(() => client.begin('次'));
 });

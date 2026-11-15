@@ -6,14 +6,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
+import { isProtectedCandidate } from '../../lib/candidate.mjs';
 import { readSampleFile } from '../samples.mjs';
 
 const mozcCommit = 'a4541df29db443b49f81cf54665873b68fde9efa';
 const maxConversionCandidates = 200;
-const protectedAttributes = new Set([
-  'USER_DICTIONARY', 'NO_MODIFICATION', 'COMMAND_CANDIDATE',
-  'SPELLING_CORRECTION', 'TYPING_CORRECTION',
-]);
 
 function requestKind(mode) {
   switch (mode) {
@@ -97,7 +94,7 @@ function parseSegments(lines, sample, invalid) {
         id,
         value: row[3],
         reading: candidateReading,
-        kind: isMeta || attributes.some((name) => protectedAttributes.has(name)) ? 'protected' : 'normal',
+        kind: isMeta || isProtectedCandidate({ attributes }) ? 'protected' : 'normal',
         cost: Number(costs[1]),
         attributes,
       };
@@ -181,7 +178,7 @@ async function capture(checkout, executable, dictionary, input) {
   const profile = await mkdtemp(join(profileParent, 'cat-ime-mozc-'));
   if (dirname(resolve(profile)) !== profileParent) throw new Error('Unexpected temporary profile path.');
   try {
-    const result = spawnSync(executable, [
+    let args = [
       '--engine_type=desktop',
       '--engine_name=oss',
       `--engine_data_path=${dictionary}`,
@@ -191,8 +188,18 @@ async function capture(checkout, executable, dictionary, input) {
       `--max_conversion_candidates_size=${maxConversionCandidates}`,
       '--max_candidates_to_show=2147483647',
       '--show_meta_candidates',
-    ], {
-      cwd: join(checkout, 'src'),
+    ];
+    let cwd = join(checkout, 'src');
+    if (process.platform === 'win32') {
+      // Mozc's narrow Windows argv uses the active code page. Abseil reads
+      // flagfile values as bytes, so a relative ASCII filename keeps the paths UTF-8.
+      const flagFile = 'converter.flags';
+      await writeFile(join(profile, flagFile), `${args.join('\n')}\n`, { flag: 'wx' });
+      args = [`--flagfile=${flagFile}`];
+      cwd = profile;
+    }
+    const result = spawnSync(executable, args, {
+      cwd,
       input: requests,
       maxBuffer: 128 * 1024 * 1024,
       timeout: 120_000,

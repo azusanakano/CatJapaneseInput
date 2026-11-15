@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';
+import { execFileSync, spawnSync } from 'node:child_process';
+import { copyFile, mkdir, mkdtemp, readFile, readdir, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { makeRequests, parseCapture } from './capture.mjs';
 
@@ -116,4 +121,50 @@ test('a truncated or unrecognized response fails closed without echoing the samp
     assert.doesNotMatch(error.message, /かいと|回答/);
     return true;
   });
+});
+
+const nativeCheckout = process.env.CATJ_MOZC_CHECKOUT;
+test('Windows capture accepts Japanese checkout, executable, dictionary and TEMP paths', {
+  skip: process.platform !== 'win32' || !nativeCheckout ? 'requires a built Mozc checkout in CATJ_MOZC_CHECKOUT' : false,
+}, async (t) => {
+  const tempParent = resolve(tmpdir());
+  const root = await mkdtemp(join(tempParent, 'catj-capture-test-'));
+  assert.equal(dirname(resolve(root)), tempParent);
+  t.after(() => rm(root, { recursive: true, force: true, maxRetries: 2 }));
+
+  const source = resolve(nativeCheckout);
+  const checkout = join(root, '作業 フォルダー');
+  const git = (path, ...args) => execFileSync('git', ['-C', path, ...args], { encoding: 'utf8' }).trimEnd();
+  const objects = git(source, 'rev-parse', '--path-format=absolute', '--git-path', 'objects');
+  const commit = git(source, 'rev-parse', 'HEAD');
+  await mkdir(checkout);
+  git(checkout, 'init', '--quiet');
+  await writeFile(join(checkout, '.git', 'objects', 'info', 'alternates'), objects + '\n');
+  git(checkout, 'sparse-checkout', 'set', '--no-cone', '/src/data/dictionary_oss/id.def');
+  git(checkout, 'checkout', '--quiet', '--detach', commit);
+
+  const executable = join(root, '変換器.exe');
+  const dictionary = join(root, '辞書 = 日本語.data');
+  const input = join(root, '入力.jsonl');
+  const output = join(root, '出力.jsonl');
+  const profileParent = join(root, '一時 フォルダー');
+  await Promise.all([
+    copyFile(join(source, 'src', 'bazel-bin', 'converter', 'converter_main.exe'), executable),
+    copyFile(join(source, 'src', 'bazel-bin', 'data_manager', 'oss', 'mozc.data'), dictionary),
+    mkdir(profileParent),
+    writeFile(input, JSON.stringify({ mode: 'conversion', reading: 'にほんご', acceptedTexts: ['日本語'] }) + '\n'),
+  ]);
+
+  const cli = fileURLToPath(new URL('./capture.mjs', import.meta.url));
+  const env = Object.fromEntries(Object.entries(process.env).filter(([name]) => !/^(TEMP|TMP)$/i.test(name)));
+  const result = spawnSync(process.execPath, [cli, checkout, executable, dictionary, input, '--output', output], {
+    encoding: 'utf8', timeout: 130_000, windowsHide: true,
+    env: { ...env, TEMP: profileParent, TMP: profileParent },
+  });
+  if (result.error) throw result.error;
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(await readdir(profileParent), []);
+  const record = JSON.parse(await readFile(output, 'utf8'));
+  assert.equal(record.candidateStatus, 'captured');
+  assert.equal(record.segments[0].candidates[0].value, '日本語');
 });

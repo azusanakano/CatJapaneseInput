@@ -1,0 +1,59 @@
+load("//:build_defs.bzl", "mozc_cc_binary", "mozc_cc_library", "mozc_cc_test")
+load("//build_tools:embed_file.bzl", "mozc_embed_file")
+
+package(default_visibility = ["//visibility:private"])
+
+mozc_cc_library(
+    name = "utf8proc",
+    srcs = ["third_party/utf8proc/utf8proc.c"],
+    hdrs = ["third_party/utf8proc/utf8proc.h"],
+    textual_hdrs = ["third_party/utf8proc/utf8proc_data.c"],
+    defines = ["UTF8PROC_STATIC"],
+    includes = ["third_party/utf8proc"],
+)
+
+mozc_cc_library(
+    name = "context_model",
+    srcs = ["catj_context_model.cc"],
+    hdrs = ["catj_context_model.h"],
+    visibility = ["//engine:__pkg__"],
+    deps = [":utf8proc"],
+)
+
+mozc_cc_library(
+    name = "context",
+    srcs = ["catj_context.cc"],
+    hdrs = ["catj_context.h"],
+    visibility = ["//engine:__pkg__"],
+    deps = [":context_model", ":utf8proc"],
+)
+
+mozc_cc_test(
+    name = "context_test",
+    srcs = ["catj_context_test.cc"],
+    deps = [":context"],
+)
+
+mozc_cc_binary(
+    name = "context_model_probe",
+    srcs = ["catj_context_model_test.cc"],
+    testonly = True,
+    deps = [":context_model"],
+)
+
+mozc_embed_file(
+    name = "embed_context_model",
+    srcs = ["catj-model.bin"],
+    out = "catj_model_data.inc",
+    var_name = "kCatjContextModel",
+)
+
+mozc_cc_library(
+    name = "packaged_model",
+    srcs = ["catj_packaged_model.cc", ":embed_context_model"],
+    hdrs = ["catj_packaged_model.h"],
+    linkopts = ["bcrypt.lib"],
+    target_compatible_with = ["@platforms//os:windows"],
+    visibility = ["//engine:__pkg__"],
+    deps = [":context_model", "//base:embedded_file"],
+)

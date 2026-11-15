@@ -1,0 +1,103 @@
+{
+  "reviewDate": "2026-11-15",
+  "commit": "dc716d68cef7abfa4d9573692d47311819de9c96",
+  "files": 19,
+  "lines": 3192,
+  "entries": [
+    {
+      "path": "README.md",
+      "lines": 100,
+      "sha256": "5c43deee3058e1116b9db2dd98e8cc3290a32c5d99e8003da57aacc419dec5ee"
+    },
+    {
+      "path": "lib/context.mjs",
+      "lines": 94,
+      "sha256": "a6ecadf3fee27452d7fb817b2c81c8b73750955428edbb766a7fe6cb6ddca7cf"
+    },
+    {
+      "path": "lib/edit-protocol.mjs",
+      "lines": 223,
+      "sha256": "b127888801f013da536fd8cb03ccdf3aea90d41c0252ed1227758c84291438c9"
+    },
+    {
+      "path": "lib/evaluate.mjs",
+      "lines": 178,
+      "sha256": "931fc12df5683e4e1f36a8bb88001cfb32d40ec4a4349a6ab34a8556dde5baea"
+    },
+    {
+      "path": "lib/model.mjs",
+      "lines": 288,
+      "sha256": "d0f6cb23cd18d1ea8a49e5f658fb33f38839ca4ce3df8c55426875b4aaae11e8"
+    },
+    {
+      "path": "lib/ranking.mjs",
+      "lines": 148,
+      "sha256": "be7974c883d63c661d8a7fad4b6282e185c4952ad0c3103934972ef4bdd6d6d2"
+    },
+    {
+      "path": "local-japanese-ime-design.md",
+      "lines": 338,
+      "sha256": "c01840010c00ad0b2eedb43844ddbe175516a6e395eb6fe7a5777f6aacc08170"
+    },
+    {
+      "path": "test/context.test.mjs",
+      "lines": 80,
+      "sha256": "5e9a7dbf81d0ba4e8eaff52417deef990c7dea9fc5d5eab7c236b6fe63482469"
+    },
+    {
+      "path": "test/edit-protocol.test.mjs",
+      "lines": 179,
+      "sha256": "34011f0a586b9503bb8a02d8deffff3f86c905295b3bac9a1d0255d8b9db3608"
+    },
+    {
+      "path": "test/evaluate.test.mjs",
+      "lines": 147,
+      "sha256": "4a530bbb275029b603759438a744715ac3104b8fb138813e135a0ef5caf608a2"
+    },
+    {
+      "path": "test/fixtures/candidates.jsonl",
+      "lines": 3,
+      "sha256": "d777d98e2cf791c321a84b4cf2367965e7163ab3be72b095922ef4f03f139d2f"
+    },
+    {
+      "path": "test/model.test.mjs",
+      "lines": 86,
+      "sha256": "3210c5285fec805bb47fa2d52a82c6baf7ab97ba433eb7420cf6f2978c0f3c10"
+    },
+    {
+      "path": "test/ranking.test.mjs",
+      "lines": 120,
+      "sha256": "4cd6653a1d382f2bac0b2bb22540e21ad3d6226fd557097060ed7cc2475a4eb9"
+    },
+    {
+      "path": "tools/evaluate.mjs",
+      "lines": 94,
+      "sha256": "be6dd32b4c235aded33add1a208cd53bb8ba906a4ced5640b354913c7bc8198a"
+    },
+    {
+      "path": "tools/mozc/capture.mjs",
+      "lines": 253,
+      "sha256": "c84cb5608a177c1aedda5df707e337af66f15d50f5ca9cf2dafa101cb8e67424"
+    },
+    {
+      "path": "tools/mozc/capture.test.mjs",
+      "lines": 119,
+      "sha256": "e712e134d6310283fca334339902dcc9c81804f22b5ac5c53f33599fdabce04b"
+    },
+    {
+      "path": "tools/mozc/catj-brand.patch",
+      "lines": 677,
+      "sha256": "2bf56cfc561c41c356b6f8a73ff6b0d769ec962e0397e51846331e457b5e6631"
+    },
+    {
+      "path": "tools/samples.mjs",
+      "lines": 17,
+      "sha256": "0b8e19844e625e446ae332fc3c092b19af504c9500c05e74baa99afcf8d4b433"
+    },
+    {
+      "path": "tools/train.mjs",
+      "lines": 48,
+      "sha256": "f2d04c3b8a07e95c7a381f214b3184f209b638d359a3980d3aafde8ac95ab3e5"
+    }
+  ]
+}

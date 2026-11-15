@@ -1,0 +1,45 @@
+# Use the patched session_handler_main --dictionary=oss --test with a fresh --profile.
+# The UTF-16LE snapshots use protobuf octal escaping, with a final CRLF.
+SET_CONFIG	history_learning_level	NO_HISTORY
+SEND_KEY	on
+
+# No snapshot: keep the dictionary order.
+SEND_KEYS	hashi
+EXPECT_PREEDIT	はし
+SEND_KEY	space
+EXPECT_PREEDIT	橋
+EXPECT_CANDIDATE	0	橋
+SUBMIT_CANDIDATE	0
+EXPECT_RESULT	橋
+RESET_CONTEXT
+
+# Previous line: 川を渡るため、橋を探した。
+SEND_KEYS	hashi
+EXPECT_PREEDIT	はし
+SEND_KEY_WITH_OPTION	space	context.input_field_type=NORMAL	context.catj_left_clipped=false	context.catj_preceding_utf16le="\335\135\222\060\041\156\213\060\137\060\201\060\001\060\113\152\222\060\242\143\127\060\137\060\002\060\015\000\012\000"
+EXPECT_PREEDIT	橋
+EXPECT_CANDIDATE	0	橋
+SUBMIT_CANDIDATE	0
+EXPECT_RESULT	橋
+RESET_CONTEXT
+
+# Previous line: 夕食のため、箸を探した。
+SEND_KEYS	hashi
+EXPECT_PREEDIT	はし
+SEND_KEY_WITH_OPTION	space	context.input_field_type=NORMAL	context.catj_left_clipped=false	context.catj_preceding_utf16le="\025\131\337\230\156\060\137\060\201\060\001\060\270\173\222\060\242\143\127\060\137\060\002\060\015\000\012\000"
+EXPECT_PREEDIT	箸
+EXPECT_CANDIDATE	0	箸
+SUBMIT_CANDIDATE	0
+EXPECT_RESULT	箸
+RESET_CONTEXT
+
+# A non-normal scope cannot use that same chopsticks snapshot.
+SEND_KEYS	hashi
+EXPECT_PREEDIT	はし
+SEND_KEY_WITH_OPTION	space	context.input_field_type=PASSWORD	context.catj_left_clipped=false	context.catj_preceding_utf16le="\025\131\337\230\156\060\137\060\201\060\001\060\270\173\222\060\242\143\127\060\137\060\002\060\015\000\012\000"
+EXPECT_PREEDIT	橋
+EXPECT_CANDIDATE	0	橋
+SUBMIT_CANDIDATE	0
+EXPECT_RESULT	橋
+RESET_CONTEXT
+

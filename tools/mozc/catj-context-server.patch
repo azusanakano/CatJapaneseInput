@@ -1,0 +1,759 @@
+diff --git a/src/client/client.cc b/src/client/client.cc
+--- a/src/client/client.cc
++++ b/src/client/client.cc
+@@ -248,9 +248,7 @@
+ 
+   output << "---- Start history snapshot for " << label << std::endl;
+   output << "Version " << Version::GetMozcVersion() << std::endl;
+-  for (size_t i = 0; i < history_inputs_.size(); ++i) {
+-    output << absl::StrCat(history_inputs_[i]);
+-  }
++  output << "History entries: " << history_inputs_.size() << std::endl;
+   output << "---- End history snapshot for " << label << std::endl;
+ }
+ 
+@@ -265,7 +263,8 @@
+   for (size_t i = 0; i < history_inputs_.size(); ++i) {
+     history_inputs_[i].set_id(id_);
+     if (!Call(history_inputs_[i], &output)) {
+-      LOG(ERROR) << "playback history failed: " << history_inputs_[i];
++      LOG(ERROR) << "Playback failed for command type: "
++                 << history_inputs_[i].type();
+       break;
+     }
+   }
+@@ -391,7 +390,13 @@
+   InitInput(input);
+   output->set_id(0);
+ 
+-  if (!CallAndCheckVersion(*input, output)) {  // server is not running
++  const bool delivered = CallAndCheckVersion(*input, output);
++  // A one-shot snapshot must not enter history or a restarted session.
++  if (input->has_context()) {
++    input->mutable_context()->clear_catj_preceding_utf16le();
++    input->mutable_context()->clear_catj_left_clipped();
++  }
++  if (!delivered) {  // server is not running
+     LOG(ERROR) << "Call command failed";
+   } else if (output->id() != input->id()) {  // invalid ID
+     LOG(ERROR) << "Session id is void. re-issue session id";
+@@ -631,7 +636,7 @@
+ }
+ 
+ bool Client::Call(const commands::Input& input, commands::Output* output) {
+-  MOZC_VLOG(2) << "commands::Input: " << std::endl << input;
++  MOZC_VLOG(2) << "Calling command type: " << input.type();
+ 
+   // don't repeat Call() if the status is either
+   // SERVER_FATAL, SERVER_TIMEOUT, or SERVER_BROKEN_MESSAGE
+@@ -692,7 +697,7 @@
+   }
+ 
+   if (!client->Call(request, &response_, timeout_)) {
+-    LOG(ERROR) << "Call failure" << input.DebugString();
++    LOG(ERROR) << "IPC call failed for command type: " << input.type();
+     if (client->GetLastIPCError() == IPC_TIMEOUT_ERROR) {
+       server_status_ = SERVER_TIMEOUT;
+     } else {
+@@ -703,8 +708,7 @@
+   }
+ 
+   if (!output->ParseFromString(response_)) {
+-    LOG(ERROR) << "Parse failure of the result of the request:"
+-               << input.DebugString();
++    LOG(ERROR) << "IPC response parse failed for command type: " << input.type();
+     server_status_ = SERVER_BROKEN_MESSAGE;
+     return false;
+   }
+@@ -715,7 +719,7 @@
+          server_status_ == SERVER_UNKNOWN /* during StartServer() */)
+       << " " << server_status_;
+ 
+-  MOZC_VLOG(2) << "commands::Output: " << std::endl << *output;
++  MOZC_VLOG(2) << "Received result for command type: " << input.type();
+ 
+   return true;
+ }
+diff --git a/src/converter/segments.h b/src/converter/segments.h
+--- a/src/converter/segments.h
++++ b/src/converter/segments.h
+@@ -137,6 +137,9 @@
+ 
+   // move old_idx-th-candidate to new_index
+   void move_candidate(int old_idx, int new_idx);
++  void swap_candidates(int i, int j) {
++    std::swap(candidates_[i], candidates_[j]);
++  }
+ 
+   void Clear();
+ 
+diff --git a/src/data_manager/data_manager.cc b/src/data_manager/data_manager.cc
+--- a/src/data_manager/data_manager.cc
++++ b/src/data_manager/data_manager.cc
+@@ -188,7 +188,9 @@
+     return absl::DataLossError(
+         absl::StrCat("Binary data of size ", array.size(), " is broken"));
+   }
+-  return InitFromReader(reader);
++  absl::Status status = InitFromReader(reader);
++  if (status.ok()) raw_data_ = array;
++  return status;
+ }
+ 
+ absl::Status DataManager::InitFromArray(absl::string_view array,
+@@ -198,7 +200,9 @@
+     return absl::DataLossError(
+         absl::StrCat("Binary data of size ", array.size(), " is broken"));
+   }
+-  return InitFromReader(reader);
++  absl::Status status = InitFromReader(reader);
++  if (status.ok()) raw_data_ = array;
++  return status;
+ }
+ 
+ absl::Status DataManager::InitFromReader(const DataSetReader& reader) {
+diff --git a/src/data_manager/data_manager.h b/src/data_manager/data_manager.h
+--- a/src/data_manager/data_manager.h
++++ b/src/data_manager/data_manager.h
+@@ -81,6 +81,9 @@
+   DataManager& operator=(const DataManager&) = delete;
+   virtual ~DataManager() = default;
+ 
++  // A view of the complete validated data set, owned by the caller or mmap_.
++  absl::string_view GetRawData() const { return raw_data_; }
++
+   virtual std::optional<std::string> GetFilename() const { return filename_; }
+ 
+   virtual absl::Span<const uint16_t> GetPosMatcherData() const;
+@@ -179,6 +182,7 @@
+ 
+   std::optional<std::string> filename_ = std::nullopt;
+   Mmap mmap_;
++  absl::string_view raw_data_;
+   absl::string_view pos_matcher_data_;
+   absl::string_view pos_id_map_data_;
+   absl::string_view user_pos_token_array_data_;
+diff --git a/src/engine/BUILD.bazel b/src/engine/BUILD.bazel
+--- a/src/engine/BUILD.bazel
++++ b/src/engine/BUILD.bazel
+@@ -227,7 +227,10 @@
+         "@com_google_absl//absl/status",
+         "@com_google_absl//absl/status:statusor",
+         "@com_google_absl//absl/strings",
+-    ],
++    ] + select({
++        "@platforms//os:windows": ["//catj:packaged_model"],
++        "//conditions:default": [],
++    }),
+ )
+ 
+ mozc_cc_test(
+@@ -433,6 +436,37 @@
+         "@com_google_absl//absl/log",
+         "@com_google_absl//absl/log:check",
+         "@com_google_absl//absl/strings",
++    ] + select({
++        "@platforms//os:windows": [
++            ":catj_reranker",
++            "//catj:context",
++            "//catj:context_model",
++        ],
++        "//conditions:default": [],
++    }),
++)
++
++mozc_cc_library(
++    name = "catj_reranker",
++    srcs = ["catj_reranker.cc"],
++    hdrs = ["catj_reranker.h"],
++    deps = [
++        "//catj:context_model",
++        "//converter:attribute",
++        "//converter:segments",
++        "@com_google_absl//absl/functional:function_ref",
++    ],
++)
++
++mozc_cc_test(
++    name = "catj_reranker_test",
++    size = "small",
++    srcs = ["catj_reranker_test.cc"],
++    deps = [
++        ":catj_reranker",
++        "//converter:attribute",
++        "//converter:segments",
++        "//testing:gunit_main",
+     ],
+ )
+ 
+diff --git a/src/engine/catj_reranker.cc b/src/engine/catj_reranker.cc
+new file mode 100644
+--- /dev/null
++++ b/src/engine/catj_reranker.cc
+@@ -0,0 +1,133 @@
++#include "engine/catj_reranker.h"
++
++#include <algorithm>
++#include <array>
++#include <chrono>
++#include <cmath>
++#include <cstddef>
++#include <cstdint>
++#include <limits>
++#include <string_view>
++
++#include "absl/functional/function_ref.h"
++#include "catj/catj_context_model.h"
++#include "converter/attribute.h"
++#include "converter/candidate.h"
++#include "converter/segments.h"
++
++namespace mozc::engine {
++namespace {
++
++using ::mozc::converter::Attribute;
++using ::mozc::converter::Candidate;
++
++constexpr int kMaxSegments = 4;
++constexpr int kSlots = 8;
++constexpr uint32_t kProtected =
++    Attribute::USER_DICTIONARY | Attribute::NO_MODIFICATION |
++    Attribute::COMMAND_CANDIDATE | Attribute::SPELLING_CORRECTION |
++    Attribute::TYPING_CORRECTION;
++constexpr double kMinLead = 0.15;
++constexpr double kMinGain = 0.15;
++
++bool IsFixed(const Segment& segment) {
++  return segment.segment_type() == Segment::FIXED_VALUE;
++}
++
++std::string_view HeadValue(const Segment* segment) {
++  if (segment == nullptr || segment->candidates_size() == 0) return {};
++  return segment->candidate(0).value;
++}
++
++}  // namespace
++
++bool TryRerankCatjConversion(
++    Segments& segments,
++    absl::FunctionRef<double(const catj::CandidateFeatures&)> score,
++    std::chrono::steady_clock::time_point deadline) {
++  const auto expired = [deadline] {
++    return std::chrono::steady_clock::now() >= deadline;
++  };
++  const size_t size = segments.conversion_segments_size();
++  int considered_segments = 0;
++  for (size_t index = 0; index < size; ++index) {
++    if (expired() || considered_segments == kMaxSegments) return false;
++    Segment& segment = *segments.mutable_conversion_segment(index);
++    if (IsFixed(segment)) continue;
++
++    std::array<int, kSlots> indices;
++    int normal_slots = 0;
++    for (int candidate_index = 0, end = static_cast<int>(segment.candidates_size());
++         candidate_index < end && normal_slots < kSlots; ++candidate_index) {
++      if (expired()) return false;
++      const Candidate& candidate = segment.candidate(candidate_index);
++      if ((candidate.attributes & kProtected) == 0) {
++        indices[normal_slots++] = candidate_index;
++      }
++    }
++    if (normal_slots < 2) continue;
++    ++considered_segments;
++    if (!catj::BoundedFeature(segment.key())) continue;
++
++    const Segment* previous =
++        index > 0 ? &segments.conversion_segment(index - 1) : nullptr;
++    const Segment* next =
++        index + 1 < size ? &segments.conversion_segment(index + 1) : nullptr;
++    const Candidate& base = segment.candidate(indices[0]);
++    std::array<int, kSlots> scored_indices;
++    std::array<double, kSlots> scores;
++    int count = 0;
++    for (int slot = 0; slot < normal_slots; ++slot) {
++      if (expired()) return false;
++      const int candidate_index = indices[slot];
++      const Candidate& candidate = segment.candidate(candidate_index);
++      if (candidate.effective_converted_segment_count() != 1 ||
++          (candidate.attributes & Attribute::PARTIALLY_KEY_CONSUMED) != 0 ||
++          !catj::BoundedFeature(candidate.key) ||
++          !catj::BoundedFeature(candidate.value)) {
++        if (slot == 0) break;
++        continue;
++      }
++      const double value = score(catj::CandidateFeatures{
++          .segment_reading = segment.key(),
++          .candidate_reading = candidate.key,
++          .candidate_value = candidate.value,
++          .previous_reading = previous == nullptr ? "" : previous->key(),
++          .previous_value = HeadValue(previous),
++          .next_reading = next == nullptr ? "" : next->key(),
++          .next_value = HeadValue(next),
++          .previous_fixed = previous != nullptr && IsFixed(*previous),
++          .next_fixed = next != nullptr && IsFixed(*next),
++          .candidate_index = static_cast<size_t>(candidate_index),
++          .candidate_cost = static_cast<double>(candidate.cost),
++          .baseline_cost = static_cast<double>(base.cost),
++      });
++      if (!std::isfinite(value)) {
++        count = 0;
++        break;
++      }
++      scored_indices[count] = candidate_index;
++      scores[count++] = value;
++    }
++    if (count < 2) continue;
++
++    const int best = static_cast<int>(
++        std::max_element(scores.begin(), scores.begin() + count) - scores.begin());
++    if (best == 0) continue;
++    double second = -std::numeric_limits<double>::infinity();
++    for (int slot = 0; slot < count; ++slot) {
++      if (slot != best) second = std::max(second, scores[slot]);
++    }
++    if (scores[best] - second <= kMinLead || scores[best] - scores[0] <= kMinGain) {
++      continue;
++    }
++    if (expired()) return false;
++    for (int slot = best; slot > 0; --slot) {
++      segment.swap_candidates(scored_indices[slot], scored_indices[slot - 1]);
++    }
++    return true;
++  }
++  return false;
++}
++
++}  // namespace mozc::engine
+diff --git a/src/engine/catj_reranker.h b/src/engine/catj_reranker.h
+new file mode 100644
+--- /dev/null
++++ b/src/engine/catj_reranker.h
+@@ -0,0 +1,22 @@
++#ifndef MOZC_ENGINE_CATJ_RERANKER_H_
++#define MOZC_ENGINE_CATJ_RERANKER_H_
++
++#include <chrono>
++
++#include "absl/functional/function_ref.h"
++#include "catj/catj_context_model.h"
++#include "converter/segments.h"
++
++namespace mozc::engine {
++
++// Reorders at most one newly generated segment, before assigning list IDs.
++// Returns false without mutation if no eligible score beats both margins
++// or the operation runs out of time.
++bool TryRerankCatjConversion(
++    Segments& segments,
++    absl::FunctionRef<double(const catj::CandidateFeatures&)> score,
++    std::chrono::steady_clock::time_point deadline);
++
++}  // namespace mozc::engine
++
++#endif  // MOZC_ENGINE_CATJ_RERANKER_H_
+diff --git a/src/engine/catj_reranker_test.cc b/src/engine/catj_reranker_test.cc
+new file mode 100644
+--- /dev/null
++++ b/src/engine/catj_reranker_test.cc
+@@ -0,0 +1,140 @@
++#include "engine/catj_reranker.h"
++
++#include <chrono>
++#include <cstdint>
++#include <limits>
++#include <thread>
++
++#include "converter/attribute.h"
++#include "converter/segments.h"
++#include "testing/gunit.h"
++
++namespace mozc::engine {
++namespace {
++
++using ::mozc::converter::Attribute;
++using TimePoint = std::chrono::steady_clock::time_point;
++
++Segment& AddSegment(Segments& segments,
++                    Segment::SegmentType type = Segment::FREE) {
++  Segment* segment = segments.add_segment();
++  segment->set_key("reading");
++  segment->set_segment_type(type);
++  return *segment;
++}
++
++void AddCandidate(Segment& segment, const char* value,
++                  uint32_t attributes = Attribute::DEFAULT_ATTRIBUTE) {
++  auto* candidate = segment.add_candidate();
++  candidate->key = "reading";
++  candidate->value = value;
++  candidate->attributes = attributes;
++}
++
++TEST(CatjRerankerTest, PromotesLeftmostAndPreservesProtectedPositions) {
++  Segments segments;
++  Segment& fixed = AddSegment(segments, Segment::FIXED_VALUE);
++  AddCandidate(fixed, "fixed-first");
++  AddCandidate(fixed, "best");
++  Segment& left = AddSegment(segments);
++  AddCandidate(left, "base");
++  AddCandidate(left, "protected", Attribute::USER_DICTIONARY);
++  AddCandidate(left, "middle");
++  AddCandidate(left, "best");
++  Segment& right = AddSegment(segments);
++  AddCandidate(right, "base");
++  AddCandidate(right, "best");
++
++  EXPECT_TRUE(TryRerankCatjConversion(
++      segments, [](const catj::CandidateFeatures& candidate) {
++        EXPECT_NE(candidate.candidate_value, "protected");
++        return candidate.candidate_value == "best" ? 2.0 : 0.0;
++      },
++      TimePoint::max()));
++  EXPECT_EQ(fixed.candidate(0).value, "fixed-first");
++  EXPECT_EQ(left.candidate(0).value, "best");
++  EXPECT_EQ(left.candidate(1).value, "protected");
++  EXPECT_EQ(left.candidate(1).attributes, Attribute::USER_DICTIONARY);
++  EXPECT_EQ(left.candidate(2).value, "base");
++  EXPECT_EQ(left.candidate(3).value, "middle");
++  EXPECT_EQ(right.candidate(0).value, "base");
++}
++
++TEST(CatjRerankerTest, DoesNotReplaceACandidateAfterItsDeadline) {
++  Segments segments;
++  Segment& segment = AddSegment(segments);
++  AddCandidate(segment, "base");
++  AddCandidate(segment, "best");
++  const TimePoint deadline = std::chrono::steady_clock::now() +
++                             std::chrono::milliseconds(25);
++  EXPECT_FALSE(TryRerankCatjConversion(
++      segments, [&](const catj::CandidateFeatures& candidate) {
++        if (candidate.candidate_value == "base") return 0.0;
++        std::this_thread::sleep_until(deadline);
++        return 2.0;
++      }, deadline));
++  EXPECT_EQ(segment.candidate(0).value, "base");
++}
++
++TEST(CatjRerankerTest, NeverScoresPastEightNormalSlots) {
++  Segments segments;
++  Segment& segment = AddSegment(segments);
++  AddCandidate(segment, "base");
++  AddCandidate(segment, "protected", Attribute::COMMAND_CANDIDATE);
++  for (int i = 0; i < 7; ++i) AddCandidate(segment, "ordinary");
++  AddCandidate(segment, "ninth");
++  int scored = 0;
++  EXPECT_FALSE(TryRerankCatjConversion(
++      segments, [&](const catj::CandidateFeatures& candidate) {
++        ++scored;
++        EXPECT_NE(candidate.candidate_value, "ninth");
++        return 0.0;
++      }, TimePoint::max()));
++  EXPECT_EQ(scored, 8);
++  EXPECT_EQ(segment.candidate(0).value, "base");
++}
++
++TEST(CatjRerankerTest, KeepsCrossSegmentAndPartialCandidatesInTheirSlots) {
++  Segments segments;
++  Segment& segment = AddSegment(segments);
++  AddCandidate(segment, "base");
++  AddCandidate(segment, "cross-segment");
++  segment.mutable_candidate(1)->converted_segment_count = 2;
++  AddCandidate(segment, "partial", Attribute::PARTIALLY_KEY_CONSUMED);
++  AddCandidate(segment, "best");
++  AddCandidate(AddSegment(segments), "next");
++  EXPECT_TRUE(TryRerankCatjConversion(
++      segments, [](const catj::CandidateFeatures& candidate) {
++        EXPECT_NE(candidate.candidate_value, "cross-segment");
++        EXPECT_NE(candidate.candidate_value, "partial");
++        return candidate.candidate_value == "base" ? 0.0 : 2.0;
++      }, TimePoint::max()));
++  EXPECT_EQ(segment.candidate(0).value, "best");
++  EXPECT_EQ(segment.candidate(1).value, "cross-segment");
++  EXPECT_EQ(segment.candidate(2).value, "partial");
++  EXPECT_EQ(segment.candidate(3).value, "base");
++}
++
++TEST(CatjRerankerTest, RejectsInvalidScoresAndExpirations) {
++  Segments segments;
++  Segment& segment = AddSegment(segments);
++  AddCandidate(segment, "base");
++  AddCandidate(segment, "best");
++  EXPECT_FALSE(TryRerankCatjConversion(
++      segments, [](const catj::CandidateFeatures& candidate) {
++        return candidate.candidate_value == "base"
++                   ? std::numeric_limits<double>::quiet_NaN()
++                   : 1.0;
++      }, TimePoint::max()));
++  int scored = 0;
++  EXPECT_FALSE(TryRerankCatjConversion(
++      segments, [&](const catj::CandidateFeatures&) {
++        ++scored;
++        return 1.0;
++      }, TimePoint::min()));
++  EXPECT_EQ(scored, 0);
++  EXPECT_EQ(segment.candidate(0).value, "base");
++}
++
++}  // namespace
++}  // namespace mozc::engine
+diff --git a/src/engine/engine.cc b/src/engine/engine.cc
+--- a/src/engine/engine.cc
++++ b/src/engine/engine.cc
+@@ -52,6 +52,10 @@
+ #include "rewriter/rewriter.h"
+ #include "rewriter/rewriter_interface.h"
+ 
++#ifdef _WIN32
++#include "catj/catj_packaged_model.h"
++#endif
++
+ namespace mozc {
+ 
+ absl::StatusOr<std::unique_ptr<Engine>> Engine::CreateEngine(
+@@ -116,6 +120,12 @@
+     return absl::ResourceExhaustedError("engine.cc: converter_ is null");
+   }
+ 
++#ifdef _WIN32
++  // Rematch the model whenever the data set changes. Existing session
++  // converters retain the original matching model with their data set.
++  catj_context_model_ = catj::LoadPackagedModel(
++      converter->modules().GetDataManager().GetRawData());
++#endif
+   converter_ = std::move(converter);
+   if (pending_supplemental_model_request_.has_value()) {
+     converter_->modules().GetSupplementalModel().LoadAsync(
+diff --git a/src/engine/engine.h b/src/engine/engine.h
+--- a/src/engine/engine.h
++++ b/src/engine/engine.h
+@@ -81,7 +81,8 @@
+ 
+   std::unique_ptr<engine::EngineConverterInterface> CreateEngineConverter()
+       const override {
+-    return std::make_unique<engine::EngineConverter>(GetConverter());
++    return std::make_unique<engine::EngineConverter>(GetConverter(),
++                                                     catj_context_model_);
+   }
+ 
+   // Functions for Reload, Sync, Wait return true if successfully operated
+@@ -142,6 +143,7 @@
+ 
+   std::shared_ptr<converter::Converter> converter_;
+   std::shared_ptr<ConverterInterface> minimal_converter_;
++  std::shared_ptr<const catj::ContextModel> catj_context_model_;
+   std::unique_ptr<DataLoader::Response> loader_response_;
+   std::optional<EngineReloadRequest> pending_supplemental_model_request_;
+   bool always_wait_for_testing_ = false;
+diff --git a/src/engine/engine_converter.cc b/src/engine/engine_converter.cc
+--- a/src/engine/engine_converter.cc
++++ b/src/engine/engine_converter.cc
+@@ -32,11 +32,13 @@
+ #include "engine/engine_converter.h"
+ 
+ #include <algorithm>
++#include <chrono>
+ #include <cstddef>
+ #include <cstdint>
+ #include <cstdlib>
+ #include <limits>
+ #include <memory>
++#include <mutex>
+ #include <optional>
+ #include <string>
+ #include <utility>
+@@ -64,6 +66,12 @@
+ #include "request/conversion_request.h"
+ #include "transliteration/transliteration.h"
+ 
++#ifdef _WIN32
++#include "catj/catj_context.h"
++#include "catj/catj_context_model.h"
++#include "engine/catj_reranker.h"
++#endif
++
+ namespace mozc {
+ namespace engine {
+ namespace {
+@@ -103,9 +111,12 @@
+ }  // namespace
+ 
+ EngineConverter::EngineConverter(
+-    std::shared_ptr<const ConverterInterface> converter)
++    std::shared_ptr<const ConverterInterface> converter,
++    std::shared_ptr<const catj::ContextModel> catj_context_model)
+     : EngineConverter(std::move(converter), composer::GetSharedDefaultRequest(),
+-                      config::ConfigHandler::GetSharedDefaultConfig()) {}
++                      config::ConfigHandler::GetSharedDefaultConfig()) {
++  catj_context_model_ = std::move(catj_context_model);
++}
+ 
+ EngineConverter::EngineConverter(
+     std::shared_ptr<const ConverterInterface> converter,
+@@ -169,6 +180,37 @@
+     ResetState();
+     return false;
+   }
++
++#ifdef _WIN32
++  const commands::Context* snapshot = preferences.catj_context;
++  if (snapshot != nullptr && snapshot->has_catj_preceding_utf16le() &&
++      snapshot->has_catj_left_clipped() &&
++      snapshot->has_input_field_type() &&
++      snapshot->input_field_type() == commands::Context::NORMAL &&
++      !conversion_request.incognito_mode() && catj_context_model_ != nullptr &&
++      catj_context_model_->Trained(catj::Mode::kConversion)) {
++    // Try once on the session thread. There is no queued result that can
++    // replace a published list, and another scoring operation never blocks us.
++    static std::mutex scoring_mutex;
++    const std::unique_lock lock(scoring_mutex, std::try_to_lock);
++    const auto& preceding = snapshot->catj_preceding_utf16le();
++    if (lock.owns_lock() && preceding.size() <= 2048 &&
++        preceding.size() % 2 == 0) {
++      const auto deadline = std::chrono::steady_clock::now() +
++                            std::chrono::milliseconds(2);
++      const auto extracted =
++          catj::ExtractContext(preceding, snapshot->catj_left_clipped());
++      const auto lines = extracted.lines();
++      TryRerankCatjConversion(
++          segments_,
++          [&](const catj::CandidateFeatures& candidate) {
++            return catj_context_model_->Score(catj::Mode::kConversion,
++                                             candidate, lines);
++          },
++          deadline);
++    }
++  }
++#endif
+ 
+   segment_index_ = 0;
+   state_ = CONVERSION;
+diff --git a/src/engine/engine_converter.h b/src/engine/engine_converter.h
+--- a/src/engine/engine_converter.h
++++ b/src/engine/engine_converter.h
+@@ -52,6 +52,10 @@
+ #include "transliteration/transliteration.h"
+ 
+ namespace mozc {
++
++namespace catj {
++class ContextModel;
++}  // namespace catj
+ namespace engine {
+ 
+ // Class handling ConverterInterface with a session state.  This class
+@@ -61,7 +65,9 @@
+   EngineConverter(std::shared_ptr<const ConverterInterface> converter,
+                   std::shared_ptr<const commands::Request> request,
+                   std::shared_ptr<const config::Config> config);
+-  explicit EngineConverter(std::shared_ptr<const ConverterInterface> converter);
++  explicit EngineConverter(
++      std::shared_ptr<const ConverterInterface> converter,
++      std::shared_ptr<const catj::ContextModel> catj_context_model = nullptr);
+   EngineConverter(const EngineConverter&) = delete;
+ 
+   // Checks if the current state is in the state bitmap.
+@@ -399,6 +405,7 @@
+ 
+   std::shared_ptr<const commands::Request> request_;
+   std::shared_ptr<const config::Config> config_;
++  std::shared_ptr<const catj::ContextModel> catj_context_model_;
+ 
+   EngineConverterInterface::State state_;
+ 
+diff --git a/src/engine/engine_converter_interface.h b/src/engine/engine_converter_interface.h
+--- a/src/engine/engine_converter_interface.h
++++ b/src/engine/engine_converter_interface.h
+@@ -60,6 +60,10 @@
+   // TODO(hidehiko,komatsu): Remove this flag, when the full EngineConverter
+   //   refactoring is done and gets safer for future development/extensions.
+   bool request_suggestion;
++
++  // Borrowed for the single synchronous Convert call. This fresh snapshot is
++  // independent of the text Mozc uses for dictionary history reconstruction.
++  const commands::Context* catj_context = nullptr;
+ };
+ 
+ // Class handling ConverterInterface with a session state.  This class
+diff --git a/src/protocol/commands.proto b/src/protocol/commands.proto
+--- a/src/protocol/commands.proto
++++ b/src/protocol/commands.proto
+@@ -536,6 +536,11 @@
+   // should update the revision whenever the input focus is changed.
+   optional int32 revision = 5 [default = 0];
+ 
++  // A per-keystroke, bounded left-context snapshot for CatJapaneseInput.
++  // Only normal Notepad fields use this data. Do not persist or replay it.
++  optional bytes catj_preceding_utf16le = 6;
++  optional bool catj_left_clipped = 7;
++
+   // Repeated fields to be used for experimental features.
+   repeated string experimental_features = 100;
+ }
+diff --git a/src/session/session.cc b/src/session/session.cc
+--- a/src/session/session.cc
++++ b/src/session/session.cc
+@@ -403,7 +403,7 @@
+       break;
+     }
+     default:
+-      LOG(WARNING) << "Unknown command" << *command;
++      LOG(WARNING) << "Unknown session command type: " << session_command.type();
+       result = DoNothing(command);
+       break;
+   }
+@@ -631,7 +631,11 @@
+   // context is updated only here. In other words, we will stop updating the
+   // client context once a conversion starts (mainly for performance reasons).
+   if (command->has_input() && command->input().has_context()) {
+-    *context_->mutable_client_context() = command->input().context();
++    // A Space snapshot is meaningful only for an existing composition.
++    commands::Context* request_context = command->mutable_input()->mutable_context();
++    request_context->clear_catj_preceding_utf16le();
++    request_context->clear_catj_left_clipped();
++    *context_->mutable_client_context() = *request_context;
+   } else {
+     context_->mutable_client_context()->Clear();
+   }
+@@ -1476,7 +1480,7 @@
+ 
+ bool Session::InsertCharacter(commands::Command* command) {
+   if (!command->input().has_key()) {
+-    LOG(ERROR) << "No key event: " << command->input();
++    LOG(ERROR) << "Key event missing for command type: " << command->input().type();
+     return false;
+   }
+ 
+@@ -2370,8 +2374,18 @@
+     }
+   }
+ 
+-  if (!context_->mutable_converter()->Convert(context_->composer(),
+-                                              context_->client_context())) {
++  ConversionPreferences preferences =
++      context_->converter().conversion_preferences();
++  const commands::Input& input = command->input();
++  if (context_->state() == ImeContext::COMPOSITION &&
++      input.type() == commands::Input::SEND_KEY && input.has_key() &&
++      IsPureSpaceKey(input.key()) && input.has_context() &&
++      input.context().revision() == context_->client_context().revision() &&
++      context_->composer().GetInputFieldType() == commands::Context::NORMAL) {
++    preferences.catj_context = &input.context();
++  }
++  if (!context_->mutable_converter()->Convert(
++          context_->composer(), context_->client_context(), preferences)) {
+     LOG(ERROR) << "Conversion failed for some reasons.";
+     OutputComposition(command);
+     return true;
+diff --git a/src/session/session_server.cc b/src/session/session_server.cc
+--- a/src/session/session_server.cc
++++ b/src/session/session_server.cc
+@@ -106,8 +106,7 @@
+     return true;
+   }
+ 
+-  // debug message
+-  MOZC_VLOG(2) << command;
++  MOZC_VLOG(2) << "Processed command type: " << command.input().type();
+ 
+   return true;
+ }

@@ -38,6 +38,13 @@ node tools/evaluate.mjs capture.jsonl
 
 採取では変換に `CONVERSION`、予測に `SUGGESTION` を使い、1件ずつ入力状態を初期化します。一時プロファイルと一時ログディレクトリを作り、履歴学習を無効にします。出力には候補ID、文節、順位、属性、辞書とバイナリの SHA-256 が入ります。読みには ASCII の空白と制御文字を使えません。失敗した変換要求は `candidateStatus: "no-result"` として残します。[固定版 Mozc の converter_main](https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/converter/converter_main.cc)
 
+Windows では UTF-8 のフラグファイルを使い、日本語を含むパスを固定版 Mozc に渡します。ビルド済みのチェックアウトを指定すると、通常のテストに加えて、実際の変換器を使う日本語パスの回帰テストも実行します。
+
+```powershell
+$env:CATJ_MOZC_CHECKOUT = (Resolve-Path $mozcCheckout).Path
+node --test
+```
+
 ## Windows x64 用の TSF 試作パッケージ
 
 固定版の原本から候補を採取した後、別の TSF プロファイルを持つ CatJapaneseInput としてビルドできます。パッチで TSF のクラスとプロファイル、MSI のアップグレード識別子、IPC、サービス、設定と学習データの保存場所を分けます。
@@ -72,6 +79,31 @@ try {
 
 Bazel がシンボリックリンク作成権限で停止する場合は、起動オプションの `--nowindows_enable_symlinks` を `build` の前に付けます。Bazel 9.0.2 はこの設定で対象ファイルのコピーを使います。
 
+## メモ帳で文脈を使う INT8 試作
+
+Windows 11 のパッケージ版メモ帳で、通常の編集欄を確認できた場合に Space 変換へ文脈を渡します。読み取り位置は未確定範囲の先頭です。最大1,024 UTF-16コード単位から現在行と直前2行を取り出し、同梱した [utf8proc v2.11.3](https://github.com/JuliaStrings/utf8proc/releases/tag/v2.11.3) で書記素境界と NFC を処理します。モデルはサーバー内で辞書データの SHA-256 と照合します。
+
+固定版の未改修チェックアウトで変換器と辞書をビルドした後に実行してください。入力ファイルは動作確認用の合成データです。
+
+```powershell
+$mozcCheckout = (Resolve-Path '..\mozc').Path
+node tools/mozc/capture.mjs $mozcCheckout "$mozcCheckout\src\bazel-bin\converter\converter_main.exe" "$mozcCheckout\src\bazel-bin\data_manager\oss\mozc.data" native/mozc/smoke-training-input.jsonl --output train-capture.jsonl
+node tools/train.mjs train-capture.jsonl smoke-model.json --epochs 320 --seed 9
+node tools/mozc/export-model.mjs smoke-model.json catj-model.bin
+.\tools\mozc\stage-context-ime.ps1 -MozcCheckout $mozcCheckout -ModelPath catj-model.bin
+```
+
+上記の Windows ビルド手順で依存関係と Qt を準備し、Mozc の `src` でパッケージと試験をビルドします。
+
+```powershell
+bazelisk --nowindows_enable_symlinks build --config=release_build --platforms=//:windows-x86_64 //:package //catj:context_model_probe
+bazelisk --nowindows_enable_symlinks test --config=release_build --platforms=//:windows-x86_64 //catj:context_test //engine:catj_reranker_test //win32/tip:tip_surrounding_text_test
+```
+
+メモ帳で「川を渡るため、橋を探した。」または「夕食のため、箸を探した。」を1行目に置き、2行目で `h a s h i` → Space を押して先頭候補を比べます。このモデルは動作確認用です。設計書の非同期文脈キャッシュ、予測の再順位付けと期限管理、Prepare／Apply／Ack の実アプリ接続は引き続き実装範囲です。
+
+サーバーの変換と確定を単独で再現する場合は、同じ条件で `//session:session_handler_main` をビルドします。`src/bazel-bin/session/session_handler_main.exe` に `--dictionary=oss --test --profile=<未作成の一時ディレクトリの絶対パス> --input=<test/fixtures/mozc-context-smoke.tsv の絶対パス>` を渡します。
+
 ## 候補を評価する
 
 `baseline` は採取順です。`currentLine` と `threeLines` は、現在行だけ、または最大3行で候補表記が再出現した行数を使います。最大4文節、各文節の元の通常候補上位8枠、昇格は最大1回です。予測で採点するのは全読みを消費し、読みの先頭が一致する候補です。`oracle` は許される昇格を列挙し、指標ごとの最良値を求めます。
@@ -95,6 +127,6 @@ node tools/evaluate.mjs evaluation-capture.jsonl --model model.json
 
 ## 現在の実装範囲
 
-- 文脈抽出のオフライン試作は ICU の Unicode 17.0 を使います。Mozc 組み込み時の C++ と utf8proc v2.11.3 への接続は未実装です。
+- 文脈抽出のオフライン試作は ICU の Unicode 17.0 を使います。メモ帳の Space 変換向けのネイティブ試作には C++ と utf8proc v2.11.3 を使います。
 - 編集プロトコルの試験は、Prepare の未着・応答消失、Ack の応答消失、書き込みの部分失敗、欄と機密区分の変更を模擬します。実アプリでの composition の所有と書き込みは未検証です。
-- TSF 試作パッケージは Mozc の辞書変換を使います。INT8 採点と編集プロトコルの実行時接続、実アプリでの遅延・精度測定、配布用 MSI の署名は今後の実装範囲です。
+- 基本の TSF 試作パッケージは Mozc の辞書変換を使います。文脈パッチを適用したパッケージは、対応欄での Space 変換にモデルを使います。実アプリでの遅延・精度測定と配布用 MSI の署名は今後の実装範囲です。

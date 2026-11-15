@@ -1,0 +1,12 @@
+diff --git a/src/version.bzl b/src/version.bzl
+--- a/src/version.bzl
++++ b/src/version.bzl
+@@ -32,7 +32,7 @@
+ MINOR = 35
+ 
+ # BUILD number used for the OSS version.
+-BUILD_OSS = 6354
++BUILD_OSS = 6355
+ 
+ # Number to be increased. This value may be replaced by other tools.
+ BUILD = BUILD_OSS

@@ -1,0 +1,504 @@
+diff --git a/src/win32/tip/BUILD.bazel b/src/win32/tip/BUILD.bazel
+index c71e773..e52b74c 100644
+--- a/src/win32/tip/BUILD.bazel
++++ b/src/win32/tip/BUILD.bazel
+@@ -354,7 +354,6 @@ mozc_cc_library(
+         ":tip_surrounding_text",
+         ":tip_text_service",
+         ":tip_thread_context",
+-        "//base/win32:wide_char",
+         "//client:client_interface",
+         "//protocol:commands_cc_proto",
+         "//win32/base:conversion_mode_util",
+@@ -767,9 +766,12 @@ mozc_cc_library(
+         ":tip_dll_module",
+         ":tip_range_util",
+         ":tip_text_service",
++        ":tip_thread_context",
+         ":tip_transitory_extension",
+         "//base/win32:com",
+         "//base/win32:wide_char",
++        "//client:client_interface",
++        "//protocol:config_cc_proto",
+         "//win32/base:imm_reconvert_string",
+         "@com_microsoft_wil//:wil",
+     ],
+diff --git a/src/win32/tip/tip_keyevent_handler.cc b/src/win32/tip/tip_keyevent_handler.cc
+index 618c232..7690294 100644
+--- a/src/win32/tip/tip_keyevent_handler.cc
++++ b/src/win32/tip/tip_keyevent_handler.cc
+@@ -34,12 +34,11 @@
+ #include <windows.h>
+ 
+ #include <cstdint>
++#include <iterator>
+ #include <memory>
+-#include <string>
+ 
+ #include "absl/log/check.h"
+ #include "absl/log/log.h"
+-#include "base/win32/wide_char.h"
+ #include "client/client_interface.h"
+ #include "protocol/commands.pb.h"
+ #include "win32/base/conversion_mode_util.h"
+@@ -133,24 +132,12 @@ bool GetOpenAndMode(TipTextService* text_service, ITfContext* context,
+   return has_valid_logical_mode && has_valid_visible_mode;
+ }
+ 
+-void FillMozcContextCommon(TipTextService* text_service, ITfContext* context,
+-                           Context* mozc_context) {
++void FillMozcContextCommon(TipTextService* text_service, Context* mozc_context) {
+   if (mozc_context == nullptr) {
+     return;
+   }
+   mozc_context->set_revision(
+       text_service->GetThreadContext()->GetFocusRevision());
+-  wil::com_ptr_nothrow<ITfContextView> context_view;
+-  if (FAILED(context->GetActiveView(&context_view))) {
+-    return;
+-  }
+-  if (context_view == nullptr) {
+-    return;
+-  }
+-  HWND attached_window = nullptr;
+-  if (FAILED(context_view->GetWnd(&attached_window))) {
+-    return;
+-  }
+ }
+ 
+ HRESULT OnTestKey(TipTextService* text_service, ITfContext* context,
+@@ -239,7 +226,7 @@ HRESULT OnTestKey(TipTextService* text_service, ITfContext* context,
+   // cannot be substituted for by const reference.
+   InputBehavior behavior = private_context->input_behavior();
+   Context mozc_context;
+-  FillMozcContextCommon(text_service, context, &mozc_context);
++  FillMozcContextCommon(text_service, &mozc_context);
+ 
+   // Update On/Off mode and conversion mode.
+   InputState input_state;
+@@ -277,19 +264,26 @@ HRESULT OnTestKey(TipTextService* text_service, ITfContext* context,
+   return S_OK;
+ }
+ 
+-void FillMozcContextForOnKey(TipTextService* text_service, ITfContext* context,
+-                             Context* mozc_context) {
+-  FillMozcContextCommon(text_service, context, mozc_context);
+-  TipSurroundingTextInfo info;
+-  if (!TipSurroundingText::Get(text_service, context, &info)) {
++void FillMozcContextForOnKey(
++    TipTextService* text_service, ITfContext* context,
++    client::ClientInterface& client, bool conversion_space,
++    Context* mozc_context) {
++  FillMozcContextCommon(text_service, mozc_context);
++  if (!conversion_space ||
++      text_service->GetThreadContext()->GetInputModeManager()
++          ->HasPrivateInputScope()) {
+     return;
+   }
+-  if (info.has_preceding_text) {
+-    mozc_context->set_preceding_text(WideToUtf8(info.preceding_text));
+-  }
+-  if (info.has_following_text) {
+-    mozc_context->set_following_text(WideToUtf8(info.following_text));
++  const auto preceding =
++      TipSurroundingText::GetCatjPrecedingText(text_service, context, client);
++  if (!preceding) {
++    return;
+   }
++  static_assert(sizeof(wchar_t) == 2);
++  mozc_context->set_catj_preceding_utf16le(
++      preceding->utf16.data(), preceding->utf16.size() * sizeof(wchar_t));
++  mozc_context->set_catj_left_clipped(preceding->left_clipped);
++  mozc_context->set_input_field_type(Context::NORMAL);
+ }
+ 
+ HRESULT OnKey(TipTextService* text_service, ITfContext* context,
+@@ -425,7 +419,15 @@ HRESULT OnKey(TipTextService* text_service, ITfContext* context,
+         Win32KeyboardInterface::CreateDefault());
+ 
+     Context mozc_context;
+-    FillMozcContextForOnKey(text_service, context, &mozc_context);
++    const bool conversion_space =
++        open && is_key_down && wparam == VK_SPACE &&
++        !keyboard_status.IsPressed(VK_SHIFT) &&
++        !keyboard_status.IsPressed(VK_CONTROL) &&
++        !keyboard_status.IsPressed(VK_MENU) &&
++        !keyboard_status.IsPressed(VK_LWIN) &&
++        !keyboard_status.IsPressed(VK_RWIN);
++    FillMozcContextForOnKey(text_service, context, *private_context->GetClient(),
++                            conversion_space, &mozc_context);
+ 
+     InputState next_state;
+     const KeyEventHandlerResult result = KeyEventHandler::ImeToAsciiEx(
+diff --git a/src/win32/tip/tip_range_util.cc b/src/win32/tip/tip_range_util.cc
+index cb91ea4..d32596e 100644
+--- a/src/win32/tip/tip_range_util.cc
++++ b/src/win32/tip/tip_range_util.cc
+@@ -203,19 +203,30 @@ HRESULT TipRangeUtil::GetInputScopes(ITfRange* range, TfEditCookie read_cookie,
+   if (FAILED(result)) {
+     return result;
+   }
+-  if (variant.vt != VT_UNKNOWN) {
++  if (variant.vt == VT_EMPTY) {
+     return S_OK;
+   }
++  if (variant.vt != VT_UNKNOWN || variant.punkVal == nullptr) {
++    return E_UNEXPECTED;
++  }
+ 
+   auto input_scope = ComQuery<ITfInputScope>(variant.punkVal);
++  if (!input_scope) {
++    return E_NOINTERFACE;
++  }
+   InputScope* input_scopes_buffer = nullptr;
+   UINT num_input_scopes = 0;
+   result = input_scope->GetInputScopes(&input_scopes_buffer, &num_input_scopes);
+   if (FAILED(result)) {
+     return result;
+   }
+-  input_scopes->assign(input_scopes_buffer,
+-                       input_scopes_buffer + num_input_scopes);
++  if (num_input_scopes != 0) {
++    if (input_scopes_buffer == nullptr) {
++      return E_UNEXPECTED;
++    }
++    input_scopes->assign(input_scopes_buffer,
++                         input_scopes_buffer + num_input_scopes);
++  }
+   ::CoTaskMemFree(input_scopes_buffer);
+   return S_OK;
+ }
+diff --git a/src/win32/tip/tip_surrounding_text.cc b/src/win32/tip/tip_surrounding_text.cc
+index af47533..7cefe26 100644
+--- a/src/win32/tip/tip_surrounding_text.cc
++++ b/src/win32/tip/tip_surrounding_text.cc
+@@ -32,21 +32,30 @@
+ #include <msctf.h>
+ #include <wil/com.h>
+ #include <windows.h>
++#include <appmodel.h>
+ 
++#include <algorithm>
++#include <array>
+ #include <cstddef>
++#include <cstdint>
+ #include <memory>
+ #include <optional>
++#include <span>
+ #include <string>
+ #include <string_view>
+ #include <utility>
++#include <vector>
+ 
+ #include "base/win32/com.h"
+ #include "base/win32/wide_char.h"
++#include "client/client_interface.h"
++#include "protocol/config.pb.h"
+ #include "win32/base/imm_reconvert_string.h"
+ #include "win32/tip/tip_composition_util.h"
+ #include "win32/tip/tip_dll_module.h"
+ #include "win32/tip/tip_range_util.h"
+ #include "win32/tip/tip_text_service.h"
++#include "win32/tip/tip_thread_context.h"
+ #include "win32/tip/tip_transitory_extension.h"
+ 
+ namespace mozc {
+@@ -56,6 +65,162 @@ namespace {
+ 
+ constexpr int kMaxSurroundingLength = 20;
+ constexpr int kMaxCharacterLength = 1024 * 1024;
++constexpr LONG kMaxCatjPrecedingLength = 1024;
++
++bool IsPackagedNotepad() {
++  static const bool is_notepad = [] {
++    constexpr std::wstring_view family = L"Microsoft.WindowsNotepad_8wekyb3d8bbwe";
++    std::array<wchar_t, 64> name{};
++    UINT32 size = static_cast<UINT32>(name.size());
++    return ::GetCurrentPackageFamilyName(&size, name.data()) == ERROR_SUCCESS &&
++           size == family.size() + 1 &&
++           std::wstring_view(name.data(), size - 1) == family;
++  }();
++  return is_notepad;
++}
++
++bool IsWindowClass(HWND window, std::wstring_view want) {
++  std::array<wchar_t, 64> name{};
++  const int size =
++      ::GetClassNameW(window, name.data(), static_cast<int>(name.size()));
++  return size > 0 && std::wstring_view(name.data(), size) == want;
++}
++
++HWND GetCatjEditor() {
++  // In the tested Notepad package, the document is a RichEdit hosted directly
++  // in a NotepadTextBox. The XAML search and settings fields are separate.
++  HWND editor = ::GetFocus();
++  HWND host = ::GetParent(editor);
++  HWND root = ::GetAncestor(editor, GA_ROOT);
++  DWORD process = 0;
++  if (!editor || !host || !root || root != ::GetForegroundWindow() ||
++      ::GetWindowThreadProcessId(editor, &process) != ::GetCurrentThreadId() ||
++      process != ::GetCurrentProcessId() ||
++      !IsWindowClass(editor, L"RichEditD2DPT") ||
++      !IsWindowClass(host, L"NotepadTextBox") ||
++      !IsWindowClass(root, L"Notepad") || !::IsWindowVisible(editor) ||
++      !::IsWindowEnabled(editor)) {
++    return nullptr;
++  }
++  ::SetLastError(ERROR_SUCCESS);
++  const LONG_PTR style = ::GetWindowLongPtrW(editor, GWL_STYLE);
++  if ((style == 0 && ::GetLastError() != ERROR_SUCCESS) ||
++      (style & ES_PASSWORD)) {
++    return nullptr;
++  }
++  return editor;
++}
++
++bool IsSameComObject(IUnknown* lhs, IUnknown* rhs) {
++  if (lhs == nullptr || rhs == nullptr) {
++    return false;
++  }
++  wil::com_ptr_nothrow<IUnknown> left;
++  wil::com_ptr_nothrow<IUnknown> right;
++  return SUCCEEDED(lhs->QueryInterface(IID_PPV_ARGS(&left))) &&
++         SUCCEEDED(rhs->QueryInterface(IID_PPV_ARGS(&right))) && left &&
++         left.get() == right.get();
++}
++
++bool IsFocusedContext(TipTextService* service, ITfContext* context) {
++  wil::com_ptr_nothrow<ITfDocumentMgr> focused;
++  wil::com_ptr_nothrow<ITfContext> top;
++  return SUCCEEDED(service->GetThreadManager()->GetFocus(&focused)) && focused &&
++         SUCCEEDED(focused->GetTop(&top)) &&
++         IsSameComObject(top.get(), context);
++}
++
++bool IsEditorContext(ITfContext* context, HWND editor) {
++  wil::com_ptr_nothrow<ITfContextView> view;
++  HWND window = nullptr;
++  return SUCCEEDED(context->GetActiveView(&view)) && view &&
++         SUCCEEDED(view->GetWnd(&window)) && window &&
++         (window == editor || ::IsChild(window, editor));
++}
++
++class CatjPrecedingTextReader final : public TipComImplements<ITfEditSession> {
++ public:
++  CatjPrecedingTextReader(
++      TipTextService* service, ITfContext* focused_context,
++      wil::com_ptr_nothrow<ITfContext> full_context, HWND editor)
++      : service_(service),
++        focused_context_(focused_context),
++        full_context_(std::move(full_context)),
++        editor_(editor),
++        focus_revision_(service->GetThreadContext()->GetFocusRevision()) {}
++
++  bool StillFocused() const {
++    return service_->GetThreadContext()->GetFocusRevision() == focus_revision_ &&
++           GetCatjEditor() == editor_ &&
++           IsFocusedContext(service_, focused_context_.get()) &&
++           IsEditorContext(full_context_.get(), editor_);
++  }
++
++  std::optional<CatjPrecedingText> TakeText() { return std::move(text_); }
++
++ private:
++  STDMETHODIMP DoEditSession(TfEditCookie read_cookie) override {
++    if (!StillFocused()) {
++      return S_FALSE;
++    }
++    wil::com_ptr_nothrow<ITfRange> selection;
++    if (FAILED(TipRangeUtil::GetDefaultSelection(
++            full_context_.get(), read_cookie, &selection, nullptr)) ||
++        !selection) {
++      return S_FALSE;
++    }
++    std::vector<InputScope> scopes;
++    const HRESULT scope_status =
++        TipRangeUtil::GetInputScopes(selection.get(), read_cookie, &scopes);
++    if (!TipSurroundingTextUtil::CanReadCatjContext(StillFocused(), scope_status,
++                                                  scopes)) {
++      return S_FALSE;
++    }
++
++    // A conversion needs an active composition owned by this TSF profile.
++    // Use its beginning so that none of the preedit enters the context.
++    const auto composition = TipCompositionUtil::GetCompositionViewFromRange(
++        selection.get(), read_cookie);
++    wil::com_ptr_nothrow<ITfRange> range;
++    if (!composition || FAILED(composition->GetRange(&range)) || !range ||
++        FAILED(range->Collapse(read_cookie, TF_ANCHOR_START))) {
++      return S_FALSE;
++    }
++    const TF_HALTCOND halt = {nullptr, TF_ANCHOR_START, TF_HF_OBJECT};
++    LONG shifted = 0;
++    if (FAILED(range->ShiftStart(read_cookie, -kMaxCatjPrecedingLength, &shifted,
++                                 &halt)) ||
++        shifted > 0 || shifted < -kMaxCatjPrecedingLength) {
++      return S_FALSE;
++    }
++    wil::com_ptr_nothrow<ITfRange> document_start;
++    LONG relative_start = 0;
++    if (FAILED(full_context_->GetStart(read_cookie, &document_start)) ||
++        !document_start ||
++        FAILED(range->CompareStart(read_cookie, document_start.get(),
++                                   TF_ANCHOR_START, &relative_start)) ||
++        relative_start < 0) {
++      return S_FALSE;
++    }
++    std::array<wchar_t, kMaxCatjPrecedingLength> buffer{};
++    ULONG read = 0;
++    if (FAILED(range->GetText(read_cookie, 0, buffer.data(),
++                              static_cast<ULONG>(buffer.size()), &read)) ||
++        read != static_cast<ULONG>(-shifted) || !StillFocused()) {
++      return S_FALSE;
++    }
++    text_.emplace(CatjPrecedingText{std::wstring(buffer.data(), read),
++                                   relative_start > 0});
++    return S_OK;
++  }
++
++  TipTextService* service_;
++  wil::com_ptr_nothrow<ITfContext> focused_context_;
++  wil::com_ptr_nothrow<ITfContext> full_context_;
++  HWND editor_;
++  int32_t focus_revision_;
++  std::optional<CatjPrecedingText> text_;
++};
+ 
+ class SurroudingTextUpdater final : public TipComImplements<ITfEditSession> {
+  public:
+@@ -290,6 +455,47 @@ bool TipSurroundingText::Get(TipTextService* text_service, ITfContext* context,
+   return true;
+ }
+ 
++std::optional<CatjPrecedingText> TipSurroundingText::GetCatjPrecedingText(
++    TipTextService* text_service, ITfContext* context,
++    client::ClientInterface& client) {
++  if (!IsPackagedNotepad()) {
++    return std::nullopt;
++  }
++  HWND editor = GetCatjEditor();
++  if (!editor || !IsFocusedContext(text_service, context)) {
++    return std::nullopt;
++  }
++  auto full_context = TipTransitoryExtension::AsFullContext(context);
++  if (!full_context || !IsEditorContext(full_context.get(), editor)) {
++    return std::nullopt;
++  }
++  const auto reader = MakeComPtr<CatjPrecedingTextReader>(
++      text_service, context, full_context, editor);
++  config::Config config;
++  if (!reader || !client.GetConfig(&config) || config.incognito_mode() ||
++      !reader->StillFocused()) {
++    return std::nullopt;
++  }
++  // This request is made from the real Space key callback. When a read
++  // lock is unavailable, fall back immediately without queuing a stale read.
++  HRESULT session_result = E_FAIL;
++  const HRESULT hr = full_context->RequestEditSession(
++      text_service->GetClientID(), reader.get(), TF_ES_SYNC | TF_ES_READ,
++      &session_result);
++  if (hr != S_OK || session_result != S_OK || !reader->StillFocused()) {
++    return std::nullopt;
++  }
++  return reader->TakeText();
++}
++
++bool TipSurroundingTextUtil::CanReadCatjContext(
++    bool editor_verified, HRESULT scope_result,
++    std::span<const InputScope> scopes) {
++  return editor_verified && scope_result == S_OK &&
++         std::all_of(scopes.begin(), scopes.end(),
++                     [](InputScope scope) { return scope == IS_DEFAULT; });
++}
++
+ bool PrepareForReconversionTSF(TipTextService* text_service,
+                                ITfContext* context,
+                                TipSurroundingTextInfo* info) {
+diff --git a/src/win32/tip/tip_surrounding_text.h b/src/win32/tip/tip_surrounding_text.h
+index a03c33f..42b88ef 100644
+--- a/src/win32/tip/tip_surrounding_text.h
++++ b/src/win32/tip/tip_surrounding_text.h
+@@ -30,15 +30,21 @@
+ #ifndef MOZC_WIN32_TIP_TIP_SURROUNDING_TEXT_H_
+ #define MOZC_WIN32_TIP_TIP_SURROUNDING_TEXT_H_
+ 
++#include <inputscope.h>
+ #include <msctf.h>
+ 
+ #include <cstddef>
++#include <optional>
++#include <span>
+ #include <string>
+ #include <string_view>
+ 
+ #include "win32/tip/tip_text_service.h"
+ 
+ namespace mozc {
++namespace client {
++class ClientInterface;
++}
+ namespace win32 {
+ namespace tsf {
+ 
+@@ -52,6 +58,11 @@ struct TipSurroundingTextInfo {
+   bool in_composition = false;  // context has a composition owned by Mozc.
+ };
+ 
++struct CatjPrecedingText {
++  std::wstring utf16;
++  bool left_clipped;
++};
++
+ class TipSurroundingText {
+  public:
+   TipSurroundingText() = delete;
+@@ -68,6 +79,12 @@ class TipSurroundingText {
+   static bool Get(TipTextService* text_service, ITfContext* context,
+                   TipSurroundingTextInfo* info);
+ 
++  // Called during actual TSF key handling only. A failed or unavailable
++  // read leaves conversion on Mozc's ordinary dictionary path.
++  static std::optional<CatjPrecedingText> GetCatjPrecedingText(
++      TipTextService* text_service, ITfContext* context,
++      client::ClientInterface& client);
++
+   // A variant of TipSurroundingText::Get. One difference is that this method
+   // moves the anchor position of the selection at the end of the range.
+   // Another difference is that this method uses IMM32 message when fails to
+@@ -97,6 +114,9 @@ class TipSurroundingText {
+ 
+ class TipSurroundingTextUtil {
+  public:
++  static bool CanReadCatjContext(bool editor_verified, HRESULT scope_result,
++                                 std::span<const InputScope> scopes);
++
+   // Returns true if |text| has more than |characters_in_codepoint| characters.
+   // When succeeds, the last |*characters_in_utf16| characters in |text|
+   // can be measured as |characters_in_codepoint| in the unit of UCS4.
+diff --git a/src/win32/tip/tip_surrounding_text_test.cc b/src/win32/tip/tip_surrounding_text_test.cc
+index 0239085..b8e9af9 100644
+--- a/src/win32/tip/tip_surrounding_text_test.cc
++++ b/src/win32/tip/tip_surrounding_text_test.cc
+@@ -40,6 +40,22 @@ namespace win32 {
+ namespace tsf {
+ namespace {
+ 
++TEST(TipSurroundingTextUtilTest, CatjGateRequiresTrustedEditorAndValidScope) {
++  constexpr InputScope kDefault[] = {IS_DEFAULT};
++  constexpr InputScope kPrivate[] = {IS_DEFAULT, IS_PRIVATE};
++  constexpr InputScope kPassword[] = {IS_DEFAULT, IS_PASSWORD};
++  constexpr InputScope kPin[] = {IS_NUMERIC_PIN};
++  constexpr InputScope kSearch[] = {IS_SEARCH};
++  EXPECT_TRUE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kDefault));
++  EXPECT_TRUE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, {}));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(false, S_OK, kDefault));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, E_FAIL, {}));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kPrivate));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kPassword));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kPin));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kSearch));
++}
++
+ TEST(TipSurroundingTextUtilTest, MeasureCharactersBackward) {
+   {
+     constexpr char kSource[] = "abcde";

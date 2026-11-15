@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { extractContext } from '../lib/context.mjs';
+import { evaluateCases } from '../lib/evaluate.mjs';
+import { loadModel, trainModel } from '../lib/model.mjs';
 import {
   eligiblePromotions,
   promote,
@@ -117,4 +120,91 @@ test('requires strict lead and gain margins and preserves baseline for nonfinite
 test('rejects duplicate candidate IDs within a segment', () => {
   const segmentWithDuplicate = segment([candidate(1, '回答'), candidate(1, '解凍')]);
   assert.throws(() => validateSample(conversion(segmentWithDuplicate)), TypeError);
+});
+
+test('protection attributes override omitted and explicitly normal kinds in both modes', () => {
+  for (const attribute of [
+    'USER_DICTIONARY', 'NO_MODIFICATION', 'COMMAND_CANDIDATE',
+    'SPELLING_CORRECTION', 'TYPING_CORRECTION',
+  ]) {
+    for (const kind of [undefined, 'normal']) {
+      for (const mode of ['conversion', 'prediction']) {
+        const protectedCandidate = candidate(99, '保護', {
+          ...(kind === undefined ? {} : { kind }), attributes: [attribute], consumption: 'full',
+        });
+        const sample = { mode, segments: [segment([
+          candidate(1, '回答', { consumption: 'full' }), protectedCandidate,
+          candidate(3, '解凍', { consumption: 'full' }),
+        ])] };
+        assert.deepEqual(scoringGroups(sample), [{ segmentIndex: 0, candidateIndices: [0, 2] }]);
+        assert.deepEqual(eligiblePromotions(sample), [{ segmentIndex: 0, candidateIndex: 2 }]);
+        assert.throws(() => promote(sample, { segmentIndex: 0, candidateIndex: 1 }), RangeError);
+        const ranked = rankCase(sample, { score: ({ candidate }) => candidate.id });
+        assert.deepEqual(ids(ranked.segments), [[3, 99, 1]]);
+        assert.equal(ranked.segments[0].candidates[1], protectedCandidate);
+      }
+    }
+  }
+});
+
+test('attribute-protected candidates do not consume the original eight normal slots', () => {
+  const sample = conversion(segment([
+    candidate(99, '保護', { attributes: ['USER_DICTIONARY'] }),
+    ...Array.from({ length: 9 }, (_, index) => candidate(index, `回答${index}`)),
+  ]));
+  assert.deepEqual(scoringGroups(sample), [{ segmentIndex: 0, candidateIndices: [1, 2, 3, 4, 5, 6, 7, 8] }]);
+  const ranked = rankCase(sample, { score: ({ candidate }) => candidate.id });
+  assert.deepEqual(ids(ranked.segments), [[99, 7, 0, 1, 2, 3, 4, 5, 6, 8]]);
+  assert.throws(() => promote(sample, { segmentIndex: 0, candidateIndex: 9 }), RangeError);
+});
+
+test('an attribute-protected positive is excluded from training groups', () => {
+  const sample = {
+    ...conversion(segment([
+      candidate(0, '回答'), candidate(1, '解凍', { attributes: ['USER_DICTIONARY'] }), candidate(2, '解答'),
+    ])),
+    targets: [['解凍']],
+  };
+  assert.throws(() => trainModel([sample], { dictionarySha256: 'a'.repeat(64), epochs: 1 }), /positive/i);
+});
+
+test('attribute-protected gold remains selectable without being promoted by scoring or oracle', () => {
+  const result = evaluateCases([{
+    ...conversion(segment([
+      candidate(0, '回答'), candidate(1, '解凍', { attributes: ['USER_DICTIONARY'] }), candidate(2, '解答'),
+    ])),
+    targets: [['解凍']], context: '解凍',
+  }]).conversion;
+  assert.equal(result.allCandidateReachable, 1);
+  assert.equal(result.reachableScoringGroups, 0);
+  assert.equal(result.currentLine.promoted, 0);
+  assert.equal(result.currentLine.totalOperations, 2);
+  assert.equal(result.oracle.firstCorrect, 0);
+  assert.equal(result.oracle.totalOperations, 2);
+});
+
+test('model cost features ignore protected candidates even without an explicit protected kind', () => {
+  const dictionarySha256 = 'a'.repeat(64);
+  const sample = {
+    ...conversion(segment([
+      candidate(99, '保護', { kind: 'protected', attributes: ['USER_DICTIONARY'], cost: -9000 }),
+      candidate(0, '回答', { cost: 1000 }), candidate(1, '解凍', { cost: 1024 }),
+    ])),
+    targets: [['解凍']],
+  };
+  const score = loadModel(trainModel([sample], { dictionarySha256, epochs: 1 }), { dictionarySha256 });
+  const lines = extractContext(null);
+  function scores(input) {
+    const segment = input.segments[0];
+    return [1, 2].map(candidateIndex => score({
+      sample: input, segment, segmentIndex: 0, candidate: segment.candidates[candidateIndex], candidateIndex,
+    }, lines));
+  }
+  const expected = scores(sample);
+  for (const kind of [undefined, 'normal']) {
+    const imported = structuredClone(sample);
+    if (kind === undefined) delete imported.segments[0].candidates[0].kind;
+    else imported.segments[0].candidates[0].kind = kind;
+    assert.deepEqual(scores(imported), expected);
+  }
 });

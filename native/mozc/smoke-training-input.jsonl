@@ -1,0 +1,6 @@
+{"id":"bridge-smoke","mode":"conversion","reading":"はし","context":"川を渡るため、橋を探した。\n","acceptedTexts":["橋"],"targets":[["橋"]]}
+{"id":"chopsticks-smoke","mode":"conversion","reading":"はし","context":"夕食のため、箸を探した。\n","acceptedTexts":["箸"],"targets":[["箸"]]}
+{"id":"bridge-shared-line","mode":"conversion","reading":"はし","context":"川に新しい橋がある。\n次に使うものを確認した。\n","acceptedTexts":["橋"],"targets":[["橋"]]}
+{"id":"chopsticks-shared-line","mode":"conversion","reading":"はし","context":"食卓に新しい箸がある。\n次に使うものを確認した。\n","acceptedTexts":["箸"],"targets":[["箸"]]}
+{"id":"bridge-context","mode":"conversion","reading":"はし","context":"対岸へ渡る道を見つけた。\n","acceptedTexts":["橋"],"targets":[["橋"]]}
+{"id":"chopsticks-context","mode":"conversion","reading":"はし","context":"食事が並び、食卓の席に座った。\n","acceptedTexts":["箸"],"targets":[["箸"]]}
