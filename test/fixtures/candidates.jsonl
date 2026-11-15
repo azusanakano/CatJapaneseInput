@@ -1,0 +1,3 @@
+{"id":"answer","mode":"prediction","segments":[{"reading":"かいと","candidates":[{"id":0,"reading":"かいとう","value":"回答","consumption":"full"},{"id":1,"reading":"かいとう","value":"解凍","consumption":"full"}]}],"context":"アンケートへの回答を集めます。\n作業は明日進めます。\n","acceptedTexts":["回答"]}
+{"id":"thaw","mode":"prediction","segments":[{"reading":"かいと","candidates":[{"id":0,"reading":"かいとう","value":"回答","consumption":"full"},{"id":1,"reading":"かいとう","value":"解凍","consumption":"full"}]}],"context":"肉を解凍します。\n作業は明日進めます。\n","acceptedTexts":["解凍"]}
+{"id":"chopsticks","mode":"conversion","segments":[{"reading":"はし","candidates":[{"id":0,"reading":"はし","value":"橋"},{"id":1,"reading":"はし","value":"箸"}]}],"context":"箸を用意します。","targets":[["箸"]]}
