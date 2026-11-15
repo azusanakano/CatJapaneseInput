@@ -1,5 +1,5 @@
 diff --git a/src/win32/tip/BUILD.bazel b/src/win32/tip/BUILD.bazel
-index c71e773..e52b74c 100644
+index c71e773..3ab4117 100644
 --- a/src/win32/tip/BUILD.bazel
 +++ b/src/win32/tip/BUILD.bazel
 @@ -354,7 +354,6 @@ mozc_cc_library(
@@ -23,6 +23,14 @@ index c71e773..e52b74c 100644
          "//win32/base:imm_reconvert_string",
          "@com_microsoft_wil//:wil",
      ],
+@@ -805,6 +807,7 @@ mozc_cc_test(
+     tags = MOZC_TAGS.WIN_ONLY,
+     target_compatible_with = ["@platforms//os:windows"],
+     deps = [
++        ":tip_range_util",
+         ":tip_surrounding_text",
+         "//base:util",
+         "//base/win32:wide_char",
 diff --git a/src/win32/tip/tip_keyevent_handler.cc b/src/win32/tip/tip_keyevent_handler.cc
 index 618c232..7690294 100644
 --- a/src/win32/tip/tip_keyevent_handler.cc
@@ -131,11 +139,82 @@ index 618c232..7690294 100644
      InputState next_state;
      const KeyEventHandlerResult result = KeyEventHandler::ImeToAsciiEx(
 diff --git a/src/win32/tip/tip_range_util.cc b/src/win32/tip/tip_range_util.cc
-index cb91ea4..d32596e 100644
+index cb91ea4..10ac121 100644
 --- a/src/win32/tip/tip_range_util.cc
 +++ b/src/win32/tip/tip_range_util.cc
-@@ -203,19 +203,30 @@ HRESULT TipRangeUtil::GetInputScopes(ITfRange* range, TfEditCookie read_cookie,
+@@ -64,27 +64,49 @@ constexpr GUID kGuidAttrIdTextVerticalWriting = {
+     {0xb3, 0x11, 0x97, 0xfd, 0x66, 0xc4, 0x27, 0x4b}};
+
+ HRESULT GetReadOnlyAppProperty(ITfRange* range, TfEditCookie read_cookie,
+-                               const GUID& guid, VARIANT* variant_addr) {
++                               const GUID& guid, VARIANT* variant_addr,
++                               InputScopeFailure* failure = nullptr) {
+   HRESULT result = S_OK;
+   wil::com_ptr_nothrow<ITfContext> context;
+   result = range->GetContext(&context);
    if (FAILED(result)) {
+     return result;
+   }
++  if (!context) {
++    return E_FAIL;
++  }
+
+   wil::com_ptr_nothrow<ITfReadOnlyProperty> readonly_property;
+   result = context->GetAppProperty(guid, &readonly_property);
+   if (FAILED(result)) {
+     return result;
+   }
++  if (failure) {
++    if (TipRangeUtil::IsUnsupportedAppProperty(result,
++                                                readonly_property != nullptr)) {
++      *failure = InputScopeFailure::kUnsupportedAppProperty;
++      return S_FALSE;
++    }
++    if (result != S_OK) {
++      return E_UNEXPECTED;
++    }
++  }
+   if (!readonly_property) {
+     return E_FAIL;
+   }
+
+   result = readonly_property->GetValue(read_cookie, range, variant_addr);
++  if (failure &&
++      TipRangeUtil::IsUnavailableAppPropertyValue(result, variant_addr->vt)) {
++    *failure = InputScopeFailure::kUnavailablePropertyValue;
++  }
+   if (FAILED(result)) {
+     return result;
+   }
++  if (failure && result != S_OK) {
++    // GetValue S_FALSE can mean an uncovered or mixed range.
++    return E_UNEXPECTED;
++  }
+   return S_OK;
+ }
+
+@@ -191,32 +213,51 @@ HRESULT TipRangeUtil::GetText(ITfRange* range, TfEditCookie edit_cookie,
+ }
+
+ HRESULT TipRangeUtil::GetInputScopes(ITfRange* range, TfEditCookie read_cookie,
+-                                     std::vector<InputScope>* input_scopes) {
++                                     std::vector<InputScope>* input_scopes,
++                                     InputScopeFailure* failure) {
+   if (input_scopes == nullptr) {
+     return E_FAIL;
+   }
+   input_scopes->clear();
++  if (failure) {
++    *failure = InputScopeFailure::kNone;
++  }
+
+   wil::unique_variant variant;
+   HRESULT result = GetReadOnlyAppProperty(
+-      range, read_cookie, kGuidPropInputscope, variant.reset_and_addressof());
+-  if (FAILED(result)) {
++      range, read_cookie, kGuidPropInputscope, variant.reset_and_addressof(),
++      failure);
++  if (result != S_OK) {
      return result;
    }
 -  if (variant.vt != VT_UNKNOWN) {
@@ -147,29 +226,77 @@ index cb91ea4..d32596e 100644
 +  }
  
    auto input_scope = ComQuery<ITfInputScope>(variant.punkVal);
+-  InputScope* input_scopes_buffer = nullptr;
 +  if (!input_scope) {
 +    return E_NOINTERFACE;
 +  }
-   InputScope* input_scopes_buffer = nullptr;
++  InputScope* raw_scopes = nullptr;
    UINT num_input_scopes = 0;
-   result = input_scope->GetInputScopes(&input_scopes_buffer, &num_input_scopes);
+-  result = input_scope->GetInputScopes(&input_scopes_buffer, &num_input_scopes);
++  result = input_scope->GetInputScopes(&raw_scopes, &num_input_scopes);
++  const wil::unique_cotaskmem_ptr<InputScope> input_scopes_buffer(raw_scopes);
    if (FAILED(result)) {
      return result;
    }
 -  input_scopes->assign(input_scopes_buffer,
 -                       input_scopes_buffer + num_input_scopes);
+-  ::CoTaskMemFree(input_scopes_buffer);
++  if (failure && result != S_OK) {
++    return E_UNEXPECTED;
++  }
 +  if (num_input_scopes != 0) {
 +    if (input_scopes_buffer == nullptr) {
 +      return E_UNEXPECTED;
 +    }
-+    input_scopes->assign(input_scopes_buffer,
-+                         input_scopes_buffer + num_input_scopes);
++    const InputScope* const scopes = input_scopes_buffer.get();
++    input_scopes->assign(scopes, scopes + num_input_scopes);
 +  }
-   ::CoTaskMemFree(input_scopes_buffer);
    return S_OK;
  }
+
+diff --git a/src/win32/tip/tip_range_util.h b/src/win32/tip/tip_range_util.h
+index 8fae434..dedd4ec 100644
+--- a/src/win32/tip/tip_range_util.h
++++ b/src/win32/tip/tip_range_util.h
+@@ -41,6 +41,12 @@ namespace mozc {
+ namespace win32 {
+ namespace tsf {
+
++enum class InputScopeFailure {
++  kNone,
++  kUnsupportedAppProperty,
++  kUnavailablePropertyValue,
++};
++
+ // A utility class to handle ITfRange object.
+ class TipRangeUtil {
+  public:
+@@ -65,9 +71,21 @@ class TipRangeUtil {
+                          std::wstring* text);
+
+   // Retrieves the input scopes from |range| into |input_scopes|.
+-  // Returns the general result code.
++  // If provided, |failure| distinguishes missing scope metadata at an API
++  // boundary from an incomplete or mixed range and other failures.
+   static HRESULT GetInputScopes(ITfRange* range, TfEditCookie read_cookie,
+-                                std::vector<InputScope>* input_scopes);
++                                std::vector<InputScope>* input_scopes,
++                                InputScopeFailure* failure = nullptr);
++
++  static constexpr bool IsUnsupportedAppProperty(HRESULT result,
++                                                  bool has_property) {
++    return result == S_FALSE && !has_property;
++  }
++
++  static constexpr bool IsUnavailableAppPropertyValue(HRESULT result,
++                                                       VARTYPE type) {
++    return result == E_FAIL && type == VT_EMPTY;
++  }
+
+   // Retrieves whether the specified |range| is for vertical writing or not.
+   // Returns the general result code.
 diff --git a/src/win32/tip/tip_surrounding_text.cc b/src/win32/tip/tip_surrounding_text.cc
-index af47533..7cefe26 100644
+index af47533..07e78f8 100644
 --- a/src/win32/tip/tip_surrounding_text.cc
 +++ b/src/win32/tip/tip_surrounding_text.cc
 @@ -32,21 +32,30 @@
@@ -203,7 +330,7 @@ index af47533..7cefe26 100644
  #include "win32/tip/tip_transitory_extension.h"
  
  namespace mozc {
-@@ -56,6 +65,162 @@ namespace {
+@@ -56,6 +65,192 @@ namespace {
  
  constexpr int kMaxSurroundingLength = 20;
  constexpr int kMaxCharacterLength = 1024 * 1024;
@@ -219,6 +346,19 @@ index af47533..7cefe26 100644
 +           std::wstring_view(name.data(), size - 1) == family;
 +  }();
 +  return is_notepad;
++}
++
++bool IsTestedNotepadPackage() {
++  static const bool is_tested_package = [] {
++    constexpr std::wstring_view full_name =
++        L"Microsoft.WindowsNotepad_11.2607.14.0_x64__8wekyb3d8bbwe";
++    std::array<wchar_t, 96> name{};
++    UINT32 size = static_cast<UINT32>(name.size());
++    return ::GetCurrentPackageFullName(&size, name.data()) == ERROR_SUCCESS &&
++           size == full_name.size() + 1 &&
++           std::wstring_view(name.data(), size - 1) == full_name;
++  }();
++  return is_tested_package;
 +}
 +
 +bool IsWindowClass(HWND window, std::wstring_view want) {
@@ -311,20 +451,31 @@ index af47533..7cefe26 100644
 +        !selection) {
 +      return S_FALSE;
 +    }
-+    std::vector<InputScope> scopes;
-+    const HRESULT scope_status =
-+        TipRangeUtil::GetInputScopes(selection.get(), read_cookie, &scopes);
-+    if (!TipSurroundingTextUtil::CanReadCatjContext(StillFocused(), scope_status,
-+                                                  scopes)) {
-+      return S_FALSE;
-+    }
-+
 +    // A conversion needs an active composition owned by this TSF profile.
-+    // Use its beginning so that none of the preedit enters the context.
-+    const auto composition = TipCompositionUtil::GetCompositionViewFromRange(
-+        selection.get(), read_cookie);
++    // The caret can be at either inclusive boundary without intersecting text.
++    const auto composition =
++        TipCompositionUtil::GetCompositionView(full_context_.get(), read_cookie);
 +    wil::com_ptr_nothrow<ITfRange> range;
 +    if (!composition || FAILED(composition->GetRange(&range)) || !range ||
++        !TipRangeUtil::IsRangeCovered(read_cookie, selection.get(), range.get())) {
++      return S_FALSE;
++    }
++    // Probe the whole preedit for its scope to reject mixed properties.
++    std::vector<InputScope> scopes;
++    InputScopeFailure scope_failure = InputScopeFailure::kNone;
++    const HRESULT scope_status = TipRangeUtil::GetInputScopes(
++        range.get(), read_cookie, &scopes, &scope_failure);
++    const bool verified_editor = StillFocused();
++    // This package's ordinary RichEdit control returns E_FAIL with no
++    // scope value. It is not a general allowance for unclassified fields.
++    const bool tested_notepad_document =
++        verified_editor &&
++        scope_failure == InputScopeFailure::kUnavailablePropertyValue &&
++        IsTestedNotepadPackage() &&
++        ::SendMessageW(editor_, EM_GETPASSWORDCHAR, 0, 0) == 0;
++    if (!TipSurroundingTextUtil::CanReadCatjContext(
++            verified_editor, scope_status, scopes, scope_failure,
++            tested_notepad_document) || !StillFocused() ||
 +        FAILED(range->Collapse(read_cookie, TF_ANCHOR_START))) {
 +      return S_FALSE;
 +    }
@@ -346,9 +497,15 @@ index af47533..7cefe26 100644
 +    }
 +    std::array<wchar_t, kMaxCatjPrecedingLength> buffer{};
 +    ULONG read = 0;
-+    if (FAILED(range->GetText(read_cookie, 0, buffer.data(),
-+                              static_cast<ULONG>(buffer.size()), &read)) ||
-+        read != static_cast<ULONG>(-shifted) || !StillFocused()) {
++    LONG remaining = 0;
++    // A store can use different counts for shifting and serialized text.
++    // Accept only a complete read ending at the original preedit start.
++    if (range->GetText(read_cookie, TF_TF_MOVESTART, buffer.data(),
++                       static_cast<ULONG>(buffer.size()), &read) != S_OK ||
++        read > buffer.size() ||
++        range->CompareStart(read_cookie, range.get(), TF_ANCHOR_END,
++                            &remaining) != S_OK ||
++        remaining != 0 || !StillFocused()) {
 +      return S_FALSE;
 +    }
 +    text_.emplace(CatjPrecedingText{std::wstring(buffer.data(), read),
@@ -366,7 +523,7 @@ index af47533..7cefe26 100644
  
  class SurroudingTextUpdater final : public TipComImplements<ITfEditSession> {
   public:
-@@ -290,6 +455,47 @@ bool TipSurroundingText::Get(TipTextService* text_service, ITfContext* context,
+@@ -290,6 +485,57 @@ bool TipSurroundingText::Get(TipTextService* text_service, ITfContext* context,
    return true;
  }
  
@@ -405,8 +562,18 @@ index af47533..7cefe26 100644
 +
 +bool TipSurroundingTextUtil::CanReadCatjContext(
 +    bool editor_verified, HRESULT scope_result,
-+    std::span<const InputScope> scopes) {
-+  return editor_verified && scope_result == S_OK &&
++    std::span<const InputScope> scopes, InputScopeFailure failure,
++    bool tested_notepad_document) {
++  if (!editor_verified) {
++    return false;
++  }
++  if (failure == InputScopeFailure::kUnsupportedAppProperty) {
++    return scope_result == S_FALSE && scopes.empty();
++  }
++  if (failure == InputScopeFailure::kUnavailablePropertyValue) {
++    return tested_notepad_document && scope_result == E_FAIL && scopes.empty();
++  }
++  return scope_result == S_OK &&
 +         std::all_of(scopes.begin(), scopes.end(),
 +                     [](InputScope scope) { return scope == IS_DEFAULT; });
 +}
@@ -415,10 +582,10 @@ index af47533..7cefe26 100644
                                 ITfContext* context,
                                 TipSurroundingTextInfo* info) {
 diff --git a/src/win32/tip/tip_surrounding_text.h b/src/win32/tip/tip_surrounding_text.h
-index a03c33f..42b88ef 100644
+index a03c33f..d9f53b1 100644
 --- a/src/win32/tip/tip_surrounding_text.h
 +++ b/src/win32/tip/tip_surrounding_text.h
-@@ -30,15 +30,21 @@
+@@ -30,15 +30,22 @@
  #ifndef MOZC_WIN32_TIP_TIP_SURROUNDING_TEXT_H_
  #define MOZC_WIN32_TIP_TIP_SURROUNDING_TEXT_H_
  
@@ -431,6 +598,7 @@ index a03c33f..42b88ef 100644
  #include <string>
  #include <string_view>
  
++#include "win32/tip/tip_range_util.h"
  #include "win32/tip/tip_text_service.h"
  
  namespace mozc {
@@ -440,7 +608,7 @@ index a03c33f..42b88ef 100644
  namespace win32 {
  namespace tsf {
  
-@@ -52,6 +58,11 @@ struct TipSurroundingTextInfo {
+@@ -52,6 +59,11 @@ struct TipSurroundingTextInfo {
    bool in_composition = false;  // context has a composition owned by Mozc.
  };
  
@@ -452,7 +620,7 @@ index a03c33f..42b88ef 100644
  class TipSurroundingText {
   public:
    TipSurroundingText() = delete;
-@@ -68,6 +79,12 @@ class TipSurroundingText {
+@@ -68,6 +80,12 @@ class TipSurroundingText {
    static bool Get(TipTextService* text_service, ITfContext* context,
                    TipSurroundingTextInfo* info);
  
@@ -465,21 +633,30 @@ index a03c33f..42b88ef 100644
    // A variant of TipSurroundingText::Get. One difference is that this method
    // moves the anchor position of the selection at the end of the range.
    // Another difference is that this method uses IMM32 message when fails to
-@@ -97,6 +114,9 @@ class TipSurroundingText {
+@@ -97,6 +115,11 @@ class TipSurroundingText {
  
  class TipSurroundingTextUtil {
   public:
 +  static bool CanReadCatjContext(bool editor_verified, HRESULT scope_result,
-+                                 std::span<const InputScope> scopes);
++                                 std::span<const InputScope> scopes,
++                                 InputScopeFailure failure = InputScopeFailure::kNone,
++                                 bool tested_notepad_document = false);
 +
    // Returns true if |text| has more than |characters_in_codepoint| characters.
    // When succeeds, the last |*characters_in_utf16| characters in |text|
    // can be measured as |characters_in_codepoint| in the unit of UCS4.
 diff --git a/src/win32/tip/tip_surrounding_text_test.cc b/src/win32/tip/tip_surrounding_text_test.cc
-index 0239085..b8e9af9 100644
+index 0239085..5dffbca 100644
 --- a/src/win32/tip/tip_surrounding_text_test.cc
 +++ b/src/win32/tip/tip_surrounding_text_test.cc
-@@ -40,6 +40,22 @@ namespace win32 {
+@@ -34,12 +34,58 @@
+
+ #include "base/win32/wide_char.h"
+ #include "testing/gunit.h"
++#include "win32/tip/tip_range_util.h"
+
+ namespace mozc {
+ namespace win32 {
  namespace tsf {
  namespace {
  
@@ -497,6 +674,35 @@ index 0239085..b8e9af9 100644
 +  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kPassword));
 +  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kPin));
 +  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_OK, kSearch));
++  constexpr auto kUnsupported = InputScopeFailure::kUnsupportedAppProperty;
++  EXPECT_TRUE(TipSurroundingTextUtil::CanReadCatjContext(true, S_FALSE, {}, kUnsupported));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(false, S_FALSE, {}, kUnsupported));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_FALSE, {}));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, E_FAIL, {}, kUnsupported));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_FALSE, kPrivate, kUnsupported));
++}
++
++TEST(TipSurroundingTextUtilTest, ScopeValueUnavailableRequiresVerifiedNotepadBody) {
++  constexpr auto kUnavailable = InputScopeFailure::kUnavailablePropertyValue;
++  constexpr InputScope kPrivate[] = {IS_PRIVATE};
++  EXPECT_TRUE(TipSurroundingTextUtil::CanReadCatjContext(true, E_FAIL, {}, kUnavailable, true));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, E_FAIL, {}, kUnavailable, false));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(false, E_FAIL, {}, kUnavailable, true));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, S_FALSE, {}, kUnavailable, true));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(true, E_FAIL, kPrivate, kUnavailable, true));
++  EXPECT_FALSE(TipSurroundingTextUtil::CanReadCatjContext(
++      true, E_FAIL, {}, InputScopeFailure::kNone, true));
++}
++
++TEST(TipSurroundingTextUtilTest, OnlyExplicitlyUnsupportedAppPropertyIsAbsent) {
++  EXPECT_TRUE(TipRangeUtil::IsUnsupportedAppProperty(S_FALSE, false));
++  EXPECT_FALSE(TipRangeUtil::IsUnsupportedAppProperty(S_FALSE, true));
++  EXPECT_FALSE(TipRangeUtil::IsUnsupportedAppProperty(S_OK, false));
++  EXPECT_FALSE(TipRangeUtil::IsUnsupportedAppProperty(E_FAIL, false));
++  EXPECT_TRUE(TipRangeUtil::IsUnavailableAppPropertyValue(E_FAIL, VT_EMPTY));
++  EXPECT_FALSE(TipRangeUtil::IsUnavailableAppPropertyValue(E_FAIL, VT_UNKNOWN));
++  EXPECT_FALSE(TipRangeUtil::IsUnavailableAppPropertyValue(S_FALSE, VT_EMPTY));
++  EXPECT_FALSE(TipRangeUtil::IsUnavailableAppPropertyValue(E_UNEXPECTED, VT_EMPTY));
 +}
 +
  TEST(TipSurroundingTextUtilTest, MeasureCharactersBackward) {
