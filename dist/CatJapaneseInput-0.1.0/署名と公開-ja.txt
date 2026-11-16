@@ -2,55 +2,38 @@
 Windows 11 x64 / MSI 3.35.6359.100
 
 このフォルダーの *-unsigned.zip は署名前の確認用です。
-ZIP の展開先 CatJapaneseInput-0.1.0-Windows-x64\ には、MSI、利用者向け手順、
-第三者ライセンス、Qt の対応ソース、SHA256SUMS.txt がそろっています。
+ZIP には MSI、利用者向け手順、第三者ライセンス、Qt の対応ソース、
+SHA256SUMS.txt がそろっています。
 
 署名
 
 設計書の公開条件に合わせて、発行者が管理する公開コード署名証明書
 または署名サービスで MSI に Authenticode 署名とタイムスタンプを付けます。
-Windows の証明書ストアを使う場合の例です。PowerShell 7 で、この
-ファイルのあるディレクトリから実行します。
+PowerShell 7 でこのファイルのあるフォルダーを開き、Windows SDK の
+signtool.exe と、現在のユーザーの証明書ストアにある発行者の証明書を指定します。
 
-$releaseDir = (Get-Location).Path
-$files = Join-Path $releaseDir 'CatJapaneseInput-0.1.0-Windows-x64'
-if (!(Test-Path -LiteralPath $files -PathType Container)) {
-    $unsignedZip = Join-Path $releaseDir 'CatJapaneseInput-0.1.0-Windows-x64-unsigned.zip'
-    Expand-Archive -LiteralPath $unsignedZip -DestinationPath $files -ErrorAction Stop
-}
-$msi = Join-Path $files 'CatJapaneseInput-0.1.0-Windows-x64.msi'
 $signTool = Read-Host 'Windows SDK の signtool.exe のフルパス'
 $thumbprint = Read-Host '発行者のコード署名証明書の拇印'
 $timestampUrl = Read-Host '証明書の発行元が指定する RFC 3161 タイムスタンプ URL'
-& $signTool sign /sha1 $thumbprint /fd SHA256 /tr $timestampUrl /td SHA256 $msi
-if ($LASTEXITCODE -ne 0) { throw 'MSI の署名に失敗しました' }
-& $signTool verify /pa /v /tw $msi
-if ($LASTEXITCODE -ne 0) { throw '署名またはタイムスタンプを確認できませんでした' }
+.\package-release.ps1 -SignToolPath $signTool -CertificateThumbprint $thumbprint -TimestampUrl $timestampUrl
 
-署名サービスを使う場合は、そのサービスの手順で同じ MSI に署名し、
-上の SignTool verify を実行して発行者とタイムスタンプを確認します。
+署名サービスを使う場合は、表示された作業用 MSI にサービスの手順で署名と
+タイムスタンプを付けます。結果を同じパスに置いてから Enter を押します。
 
-ZIP の更新
+$signTool = Read-Host 'Windows SDK の signtool.exe のフルパス'
+.\package-release.ps1 -SignToolPath $signTool -SigningService
 
-署名で MSI の SHA-256 が変わるため、署名後に ZIP とチェックサムを
-作り直します。署名の検証が通った後、同じ PowerShell で実行します。
+ZIP の更新と公開
 
-$manifest = Join-Path $files 'SHA256SUMS.txt'
-$lines = Get-ChildItem -LiteralPath $files -File -Recurse | Where-Object {
-    $_.FullName -ne $manifest
-} | Sort-Object FullName | ForEach-Object {
-    $relativePath = [IO.Path]::GetRelativePath($files, $_.FullName).Replace('\', '/')
-    $hash = (Get-FileHash -Algorithm SHA256 -LiteralPath $_.FullName).Hash.ToLowerInvariant()
-    "$hash  $relativePath"
-}
-[IO.File]::WriteAllLines($manifest, [string[]] $lines)
-$zip = Join-Path (Get-Location).Path 'CatJapaneseInput-0.1.0-Windows-x64.zip'
-Compress-Archive -Path (Join-Path $files '*') -DestinationPath $zip -CompressionLevel Optimal
-$zipHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $zip).Hash.ToLowerInvariant()
-[IO.File]::WriteAllText("$zip.sha256", "$zipHash  $([IO.Path]::GetFileName($zip))" + [Environment]::NewLine)
+このスクリプトは、毎回 SHA-256 を照合した署名前 ZIP を新しい作業先に展開します。
+SignTool で署名とタイムスタンプを確認した後、MSI のチェックサムを更新し、
+再梱包した ZIP の全ファイルを照合します。成功すると、このフォルダーの
+CatJapaneseInput-0.1.0-Windows-x64.zip とその .sha256 が更新されます。
+中断で .sha256 がない場合は、同じ手順を最初から実行してください。
 
-公開対象は署名済み MSI を収めた ZIP とその .sha256 です。ソースとライセンスを含む ZIP
-を使用します。本体独自部分の公開条件は、公開者が決めて公開ページに記載します。
+SignTool の表示で署名者が想定した発行者であることを確認してから、署名済み MSI と
+ソース、ライセンスを収めた ZIP とその .sha256 を公開します。
+本体独自部分の公開条件は、公開者が決めて公開ページに記載します。
 
 確認の範囲
 
