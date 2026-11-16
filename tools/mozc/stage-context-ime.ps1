@@ -1,14 +1,17 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string] $MozcCheckout,
-    [Parameter(Mandatory)][string] $ModelPath
+    [string] $ModelPath
 )
 
 $ErrorActionPreference = 'Stop'
 $checkout = (Resolve-Path -LiteralPath $MozcCheckout).Path
-$model = Get-Item -LiteralPath $ModelPath
-if ($model.PSIsContainer -or $model.Length -ne 1072752) {
-    throw 'Pass a binary model produced by tools/mozc/export-model.mjs.'
+$model = $null
+if ($PSBoundParameters.ContainsKey('ModelPath')) {
+    $model = Get-Item -LiteralPath $ModelPath
+    if ($model.PSIsContainer -or $model.Length -ne 1072752) {
+        throw 'Pass a binary model produced by tools/mozc/export-model.mjs.'
+    }
 }
 $head = git -C $checkout rev-parse HEAD
 if ($LASTEXITCODE -ne 0 -or $head -ne 'a4541df29db443b49f81cf54665873b68fde9efa') {
@@ -25,13 +28,29 @@ function Apply-CatjPatch([string] $Name) {
     if ($LASTEXITCODE -ne 0) { throw "Patch did not apply: $Name" }
 }
 
+$source = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../native/mozc')).Path
+Apply-CatjPatch 'catj-english-dictionary.patch'
+$entries = [IO.File]::ReadAllLines((Join-Path $source 'english-dictionary.tsv'))
+# The composer sends the reading in the current kana mode.
+$katakanaEntries = foreach ($entry in $entries) {
+    $tab = $entry.IndexOf("`t")
+    $reading = $entry.Substring(0, $tab)
+    $definition = $entry.Substring($tab)
+    $katakana = [Microsoft.VisualBasic.Strings]::StrConv($reading, 'Katakana', 0x0411)
+    $halfwidth = [Microsoft.VisualBasic.Strings]::StrConv($katakana, 'Narrow', 0x0411)
+    $katakana + $definition
+    $halfwidth + $definition + "`tCATJ_LITERAL_READING"
+}
+[IO.File]::WriteAllLines((Join-Path $checkout 'src/data_manager/oss/catj_english_dictionary.tsv'),
+    [string[]] ($entries + $katakanaEntries))
+if ($null -eq $model) { return }
+
 Apply-CatjPatch 'catj-brand.patch'
 Apply-CatjPatch 'catj-context-package.patch'
 Apply-CatjPatch 'catj-context-licenses.patch'
 Apply-CatjPatch 'catj-context-server.patch'
 Apply-CatjPatch 'catj-context-tsf.patch'
 
-$source = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../native/mozc')).Path
 $target = Join-Path $checkout 'src/catj'
 New-Item -ItemType Directory -Path $target -Force | Out-Null
 foreach ($file in @('BUILD.bazel', 'catj_context.h', 'catj_context.cc', 'catj_context_test.cc',

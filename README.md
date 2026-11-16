@@ -47,6 +47,8 @@ node --test
 
 ## Windows x64 用の TSF 試作パッケージ
 
+[英字表記の一覧](native/mozc/english-dictionary.tsv)を変換辞書に組み込みます。`ゆーちゅーぶ`、`ユーチューブ`、`ﾕｰﾁｭｰﾌﾞ` などの読みを入力して Space を押すと、`YouTube` を選べます。`ぎっとはぶ` → `GitHub`、`わいふぁい` → `Wi-Fi` も同じ手順です。一覧の列は、ひらがなの読み、左品詞ID、右品詞ID、変換コスト、英字表記の順です。全角と半角のカタカナの読みはビルドの準備時に生成されます。
+
 固定版の原本から候補を採取した後、別の TSF プロファイルを持つ CatJapaneseInput としてビルドできます。パッチで TSF のクラスとプロファイル、MSI のアップグレード識別子、IPC、サービス、設定と学習データの保存場所を分けます。
 
 MSVC v143、x86/x64 の ATL、Windows 11 SDK、CMake、Python 3.12 以上、.NET SDK、Bazelisk を用意します。次の例は、このリポジトリの隣に未改修の Mozc がある場合です。
@@ -57,6 +59,7 @@ $identityPatch = (Resolve-Path 'tools/mozc/catj-brand.patch').Path
 if ((git -C $mozcCheckout rev-parse HEAD) -ne 'a4541df29db443b49f81cf54665873b68fde9efa') {
     throw 'Mozc のコミットが設計書と一致しません'
 }
+.\tools\mozc\stage-context-ime.ps1 -MozcCheckout $mozcCheckout
 git -C $mozcCheckout apply --check --index --whitespace=error $identityPatch
 if ($LASTEXITCODE -ne 0) { throw 'CatJapaneseInput のパッチ適用前チェックに失敗しました' }
 git -C $mozcCheckout apply $identityPatch
@@ -83,11 +86,22 @@ Bazel がシンボリックリンク作成権限で停止する場合は、起�
 
 Windows 11 のパッケージ版メモ帳で、通常の編集欄を確認できた場合に Space 変換へ文脈を渡します。読み取り位置は未確定範囲の先頭です。最大1,024 UTF-16コード単位から現在行と直前2行を取り出し、同梱した [utf8proc v2.11.3](https://github.com/JuliaStrings/utf8proc/releases/tag/v2.11.3) で書記素境界と NFC を処理します。モデルはサーバー内で辞書データの SHA-256 と照合します。
 
-固定版の未改修チェックアウトで変換器と辞書をビルドした後に実行してください。入力ファイルは動作確認用の合成データです。
+候補採取に使う固定版の未改修チェックアウトと、パッケージ用のチェックアウトを用意します。英字辞書を組み込んだ `mozc.data` を先に作り、その辞書で候補を採取してモデルを学習します。入力ファイルは動作確認用の合成データです。
 
 ```powershell
-$mozcCheckout = (Resolve-Path '..\mozc').Path
-node tools/mozc/capture.mjs $mozcCheckout "$mozcCheckout\src\bazel-bin\converter\converter_main.exe" "$mozcCheckout\src\bazel-bin\data_manager\oss\mozc.data" native/mozc/smoke-training-input.jsonl --output train-capture.jsonl
+$baselineCheckout = (Resolve-Path '..\mozc').Path
+$mozcCheckout = (Resolve-Path '..\mozc-catj').Path
+.\tools\mozc\stage-context-ime.ps1 -MozcCheckout $mozcCheckout
+Push-Location (Join-Path $mozcCheckout 'src')
+try {
+    bazelisk --nowindows_enable_symlinks build --config=release_build --platforms=//:windows-x86_64 //data_manager/oss:mozc.data
+    if ($LASTEXITCODE -ne 0) { throw '英字辞書のビルドに失敗しました' }
+} finally {
+    Pop-Location
+}
+$converter = Join-Path $baselineCheckout 'src/bazel-bin/converter/converter_main.exe'
+$dictionary = Join-Path $mozcCheckout 'src/bazel-bin/data_manager/oss/mozc.data'
+node tools/mozc/capture.mjs $baselineCheckout $converter $dictionary native/mozc/smoke-training-input.jsonl --output train-capture.jsonl
 node tools/train.mjs train-capture.jsonl smoke-model.json --epochs 320 --seed 9
 node tools/mozc/export-model.mjs smoke-model.json catj-model.bin
 .\tools\mozc\stage-context-ime.ps1 -MozcCheckout $mozcCheckout -ModelPath catj-model.bin
@@ -102,7 +116,7 @@ bazelisk --nowindows_enable_symlinks test --config=release_build --platforms=//:
 
 メモ帳で「川を渡るため、橋を探した。」または「夕食のため、箸を探した。」を1行目に置き、2行目で `h a s h i` → Space を押して先頭候補を比べます。このモデルは動作確認用です。設計書の非同期文脈キャッシュ、予測の再順位付けと期限管理、Prepare／Apply／Ack の実アプリ接続は引き続き実装範囲です。
 
-サーバーの変換と確定を単独で再現する場合は、同じ条件で `//session:session_handler_main` をビルドします。`src/bazel-bin/session/session_handler_main.exe` に `--dictionary=oss --test --profile=<未作成の一時ディレクトリの絶対パス> --input=<test/fixtures/mozc-context-smoke.tsv の絶対パス>` を渡します。
+サーバーの変換と確定を単独で再現する場合は、同じ条件で `//session:session_handler_main` をビルドします。`src/bazel-bin/session/session_handler_main.exe` に `--dictionary=oss --test --profile=<未作成の一時ディレクトリの絶対パス> --input=<試験ファイルの絶対パス>` を渡します。[文脈変換](test/fixtures/mozc-context-smoke.tsv)と[英字変換](test/fixtures/mozc-english-conversion.tsv)を別々のプロファイルで試せます。
 
 ## 候補を評価する
 
