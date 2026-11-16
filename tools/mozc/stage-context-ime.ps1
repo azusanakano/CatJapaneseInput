@@ -30,7 +30,11 @@ function Apply-CatjPatch([string] $Name) {
 
 $source = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../native/mozc')).Path
 Apply-CatjPatch 'catj-english-dictionary.patch'
-$entries = [IO.File]::ReadAllLines((Join-Path $source 'english-dictionary.tsv'))
+$entries = @(
+    foreach ($dictionary in @('english-dictionary.tsv', 'manga-dictionary.tsv')) {
+        [IO.File]::ReadAllLines((Join-Path $source $dictionary))
+    }
+)
 # The composer sends the reading in the current kana mode.
 $katakanaEntries = foreach ($entry in $entries) {
     $tab = $entry.IndexOf("`t")

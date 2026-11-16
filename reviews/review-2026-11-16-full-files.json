@@ -1,0 +1,510 @@
+{
+  "reviewDate": "2026-11-16",
+  "timezone": "Asia/Tokyo",
+  "reviewedCommit": "5e43b97b965ada1a2213143775eb476d7ac36a55",
+  "trackedFiles": 59,
+  "entries": [
+    {
+      "path": "README.md",
+      "category": "documentation",
+      "method": "all lines read",
+      "lines": 146,
+      "bytes": 13289,
+      "gitBlobSha256": "e13d1ca4b7924614f69f965cbe5f365b6830d6e3434a5b555b0bd7da0a513856"
+    },
+    {
+      "path": "dist/.gitignore",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 9,
+      "bytes": 369,
+      "gitBlobSha256": "39a2d96063be2e65e33b359068cdf815e266753445d36f62ba486c83c9c8a18f"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/CatJapaneseInput-0.1.0-Windows-x64-unsigned.zip",
+      "category": "binary-package",
+      "method": "archive entries and SHA-256 manifest checked; not installed",
+      "lines": null,
+      "bytes": 77246739,
+      "gitBlobSha256": "b26efc43c06d7ab2379a877383ab45461360b24fe700e7e393202f3452d845e0"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/CatJapaneseInput-0.1.0-Windows-x64-unsigned.zip.sha256",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 1,
+      "bytes": 114,
+      "gitBlobSha256": "1185669ba2e54aae4a25ba46d4388ef8b265e9328c460b241f9272f35bae6852"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/package-release.ps1",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 127,
+      "bytes": 6045,
+      "gitBlobSha256": "177530a0496e893563de385daeca5bf999627134b762cd42c8d0a50caddefe7a"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/署名と公開-ja.txt",
+      "category": "documentation",
+      "method": "all lines read",
+      "lines": 52,
+      "bytes": 3027,
+      "gitBlobSha256": "06f82a5e32b1383a99452252ebe5cf873c02bd0ef4d5bcbf677ba70a4fa804ae"
+    },
+    {
+      "path": "lib/candidate.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 10,
+      "bytes": 421,
+      "gitBlobSha256": "63a828ac0bbe3a498a6a73a1dfecf59d17d422e39920eeeff6ca27ab12efb17f"
+    },
+    {
+      "path": "lib/context.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 94,
+      "bytes": 3883,
+      "gitBlobSha256": "a6ecadf3fee27452d7fb817b2c81c8b73750955428edbb766a7fe6cb6ddca7cf"
+    },
+    {
+      "path": "lib/edit-protocol.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 224,
+      "bytes": 7943,
+      "gitBlobSha256": "6efc321ebefacfeb8d497066df7b1504a4160a2f26f94f69e32ead5cddf3316c"
+    },
+    {
+      "path": "lib/evaluate.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 178,
+      "bytes": 8138,
+      "gitBlobSha256": "931fc12df5683e4e1f36a8bb88001cfb32d40ec4a4349a6ab34a8556dde5baea"
+    },
+    {
+      "path": "lib/model.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 289,
+      "bytes": 13201,
+      "gitBlobSha256": "7adde83b2815a407d26cb30fcea6f50eb147013f9621c5f15836e83e005bd204"
+    },
+    {
+      "path": "lib/ranking.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 149,
+      "bytes": 6136,
+      "gitBlobSha256": "b36611dcdcf405eccc8a99f608913c5b389c0a23e1dcbfbc0212c2a7fb2f729f"
+    },
+    {
+      "path": "local-japanese-ime-design.md",
+      "category": "documentation",
+      "method": "all lines read",
+      "lines": 338,
+      "bytes": 62060,
+      "gitBlobSha256": "c01840010c00ad0b2eedb43844ddbe175516a6e395eb6fe7a5777f6aacc08170"
+    },
+    {
+      "path": "native/mozc/BUILD.bazel",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 59,
+      "bytes": 1583,
+      "gitBlobSha256": "625453ca28a6eae30b45c5a0acb641911939eed2911c469b4cc891964ab635d6"
+    },
+    {
+      "path": "native/mozc/catj_context.cc",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 175,
+      "bytes": 6306,
+      "gitBlobSha256": "85928ccdf344678a22d9d086ce658414fbfa7ce839eccd04619cb7c7be0d260e"
+    },
+    {
+      "path": "native/mozc/catj_context.h",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 35,
+      "bytes": 831,
+      "gitBlobSha256": "a4aeae4abd6d606c2157b6726b3064c7c636e87690f4058d605af4a153721551"
+    },
+    {
+      "path": "native/mozc/catj_context_model.cc",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 343,
+      "bytes": 13390,
+      "gitBlobSha256": "1940d0b6ed1783cd3d2261b423d3e28bff6e59419e7f592124625c29aed70fb7"
+    },
+    {
+      "path": "native/mozc/catj_context_model.h",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 75,
+      "bytes": 2321,
+      "gitBlobSha256": "85379bd0de1934ebb2e5cf9d071cd58c8c243399148b957dff850ed42f0a01de"
+    },
+    {
+      "path": "native/mozc/catj_context_model_test.cc",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 104,
+      "bytes": 3713,
+      "gitBlobSha256": "3fdbbcac61d6a8caaaf9711698fe690b25a12b5aa00952ebe99a460a12755903"
+    },
+    {
+      "path": "native/mozc/catj_context_test.cc",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 84,
+      "bytes": 3193,
+      "gitBlobSha256": "4899b73a0a5ded920eb1f375731fc6d56c9ab0f06e09ce77980001447a60fdf8"
+    },
+    {
+      "path": "native/mozc/catj_packaged_model.cc",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 57,
+      "bytes": 1560,
+      "gitBlobSha256": "cd969c7e08f39f270f61987f76ccb997f5f4a3dbb2a1a42f5bf2c564a6677abc"
+    },
+    {
+      "path": "native/mozc/catj_packaged_model.h",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 17,
+      "bytes": 430,
+      "gitBlobSha256": "2c0ab4d1aed184985ea48202e926c3a0b68c8e0e2527149f06ee117714cf196d"
+    },
+    {
+      "path": "native/mozc/english-dictionary.tsv",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 256,
+      "bytes": 10872,
+      "gitBlobSha256": "5d1fe4a96c8641d4817b06ace2308622d7303bb8ea5ef9a8ca24344ea2e65e20"
+    },
+    {
+      "path": "native/mozc/smoke-training-input.jsonl",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 6,
+      "bytes": 1043,
+      "gitBlobSha256": "0c26bf314e16daff02fd312b322daed9c4d1feed656421470f5ca702a0f154dd"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/LICENSE.md",
+      "category": "vendor-code-and-license",
+      "method": "all lines read",
+      "lines": 93,
+      "bytes": 5125,
+      "gitBlobSha256": "3b510150d34f248a221bb88e1d811238d6c6c18b51231822c42974c39bb07256"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/utf8proc.c",
+      "category": "vendor-code-and-license",
+      "method": "all lines read",
+      "lines": 838,
+      "bytes": 33114,
+      "gitBlobSha256": "edf80118fd34796bcabef4567cc684adebc7058f2afe8cfdc11b7a78e383ed84"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/utf8proc.h",
+      "category": "vendor-code-and-license",
+      "method": "all lines read",
+      "lines": 800,
+      "bytes": 34049,
+      "gitBlobSha256": "a4e498b7392c383cf3b22e662da21e0b48f1264806235d87b5d8bd166232f658"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/utf8proc_data.c",
+      "category": "generated-unicode-data",
+      "method": "all bytes compared with official utf8proc v2.11.3; individual generated values not manually audited",
+      "lines": 17141,
+      "bytes": 2360214,
+      "gitBlobSha256": "950e549dbfc853c4304425f3af1875e72fa9fc9697c273c763400c2da4e380a7"
+    },
+    {
+      "path": "reviews/reproduce-native-path.mjs",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 44,
+      "bytes": 1926,
+      "gitBlobSha256": "fff3ecdafa537b34f4367bddf3f983fc3039c9e3438b486f85a61e974a3d0eb8"
+    },
+    {
+      "path": "reviews/reproduce-review-findings.mjs",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 72,
+      "bytes": 2588,
+      "gitBlobSha256": "ccfcb6a45fc01b00ff470d75bde131ad0c046e5af23fe44fadf7be33b736e062"
+    },
+    {
+      "path": "reviews/review-2026-11-15.md",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 156,
+      "bytes": 18684,
+      "gitBlobSha256": "b12ea5352a3e68e89c4a6c38a937c274e58c6548d3bc61622e2507859680c587"
+    },
+    {
+      "path": "reviews/review-2026-11-16.md",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 15,
+      "bytes": 3157,
+      "gitBlobSha256": "517f82787a8063eaa1d6be2ade6a81cf3bc681f6ce0b9fb14b3f946227a29f5f"
+    },
+    {
+      "path": "reviews/review-model-ranking.md",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 45,
+      "bytes": 7603,
+      "gitBlobSha256": "e81cf9907cf01bf60e8cf4fccfcdd3edd6fd69b99b00a0cf34c16ab9d851dd87"
+    },
+    {
+      "path": "reviews/review-native-mozc.md",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 108,
+      "bytes": 14165,
+      "gitBlobSha256": "65815378e7f533d416eecdae66cc0328fcdaa5077aa1a3cff28915634f7c426b"
+    },
+    {
+      "path": "reviews/review-protocol-context.md",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 123,
+      "bytes": 12276,
+      "gitBlobSha256": "9e969fc12b221f6e1419555383ccc7c39ff370922fc256950a39516bcc95f025"
+    },
+    {
+      "path": "reviews/reviewed-files.json",
+      "category": "historical-review",
+      "method": "historical evidence; original reproduction scripts read",
+      "lines": 103,
+      "bytes": 3061,
+      "gitBlobSha256": "3cf05da4f1260aea712cde5d4b7ddac14d7dc050ab4b706a51a5b99d3282e4a1"
+    },
+    {
+      "path": "test/context.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 80,
+      "bytes": 3838,
+      "gitBlobSha256": "5e9a7dbf81d0ba4e8eaff52417deef990c7dea9fc5d5eab7c236b6fe63482469"
+    },
+    {
+      "path": "test/edit-protocol.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 232,
+      "bytes": 9201,
+      "gitBlobSha256": "eeb7b1792dda5a40c0d431f808b6dcc360ecd57056e4165031861b83272b8fe1"
+    },
+    {
+      "path": "test/evaluate.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 147,
+      "bytes": 5716,
+      "gitBlobSha256": "4a530bbb275029b603759438a744715ac3104b8fb138813e135a0ef5caf608a2"
+    },
+    {
+      "path": "test/fixtures/candidates.jsonl",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 3,
+      "bytes": 909,
+      "gitBlobSha256": "d777d98e2cf791c321a84b4cf2367965e7163ab3be72b095922ef4f03f139d2f"
+    },
+    {
+      "path": "test/fixtures/mozc-context-smoke.tsv",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 45,
+      "bytes": 1698,
+      "gitBlobSha256": "8ba537d57413f18d008d4e7d90fbe75db0e11b439d63fd767fc30d4717601e24"
+    },
+    {
+      "path": "test/fixtures/mozc-english-conversion.tsv",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 44,
+      "bytes": 1034,
+      "gitBlobSha256": "6c59ac6955f056085438d6f3380899f2e12294e1431b560d584f03101d9a67f1"
+    },
+    {
+      "path": "test/model.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 86,
+      "bytes": 3920,
+      "gitBlobSha256": "3210c5285fec805bb47fa2d52a82c6baf7ab97ba433eb7420cf6f2978c0f3c10"
+    },
+    {
+      "path": "test/package-release.test.ps1",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 178,
+      "bytes": 8693,
+      "gitBlobSha256": "b239ee135e9cc4155422be1749df6b99396515018bbd7a9e315839012e56d57c"
+    },
+    {
+      "path": "test/ranking.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 210,
+      "bytes": 9383,
+      "gitBlobSha256": "6e789deb703461ed6b659e672d9a6eed5f6b42b81515dd178c582233b74101ad"
+    },
+    {
+      "path": "tools/evaluate.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 94,
+      "bytes": 3336,
+      "gitBlobSha256": "be6dd32b4c235aded33add1a208cd53bb8ba906a4ced5640b354913c7bc8198a"
+    },
+    {
+      "path": "tools/mozc/capture.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 260,
+      "bytes": 9929,
+      "gitBlobSha256": "0f31da81fde218c69aa5f8ef37933ca45929e7c01a263a9cf76e6cdf357bee59"
+    },
+    {
+      "path": "tools/mozc/capture.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 170,
+      "bytes": 7480,
+      "gitBlobSha256": "c5c5ab2580d27b6f5e872aec39ad61e9ab9fa3279ea64f1178b5f90b19a0b7ab"
+    },
+    {
+      "path": "tools/mozc/catj-brand.patch",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 677,
+      "bytes": 32474,
+      "gitBlobSha256": "2bf56cfc561c41c356b6f8a73ff6b0d769ec962e0397e51846331e457b5e6631"
+    },
+    {
+      "path": "tools/mozc/catj-context-licenses.patch",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 105,
+      "bytes": 5515,
+      "gitBlobSha256": "02d01c45d20e5fa0f4522f4f7d22fde4fbb9c67ffe1a38f655fdd3c8f98bf011"
+    },
+    {
+      "path": "tools/mozc/catj-context-package.patch",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 12,
+      "bytes": 292,
+      "gitBlobSha256": "328952a8274a56feef56b930b01e10868cc0c7fc95090c47e82f7e1434376166"
+    },
+    {
+      "path": "tools/mozc/catj-context-server.patch",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 759,
+      "bytes": 27267,
+      "gitBlobSha256": "08719341b5c2a876544068f18901f842cae99f51ab7066cfc28fd411e18bb6e4"
+    },
+    {
+      "path": "tools/mozc/catj-context-tsf.patch",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 710,
+      "bytes": 27936,
+      "gitBlobSha256": "92ccaa4edd73b0dbdf06d22bef031b1cfc81f4820a9f7d8bf6eeb8855b7da351"
+    },
+    {
+      "path": "tools/mozc/catj-english-dictionary.patch",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 38,
+      "bytes": 1859,
+      "gitBlobSha256": "f693b37ec61510a83420e4e5898aacfd6e5b0f258eacd8a36c76cb73a379ee68"
+    },
+    {
+      "path": "tools/mozc/export-model.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 42,
+      "bytes": 1766,
+      "gitBlobSha256": "3e1cdb9fa4db047e04fe5d0106db8616623886932e188dad1ac80b4c422844cc"
+    },
+    {
+      "path": "tools/mozc/export-model.test.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 63,
+      "bytes": 3370,
+      "gitBlobSha256": "c65451aba0fbcac0f29ac038c86527912621739c815f12444647d4a648371858"
+    },
+    {
+      "path": "tools/mozc/stage-context-ime.ps1",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 67,
+      "bytes": 3072,
+      "gitBlobSha256": "ebde390f7ed1f18dad5f64315b6a825468499888f6571119a11ca3207b7e42ee"
+    },
+    {
+      "path": "tools/samples.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 17,
+      "bytes": 568,
+      "gitBlobSha256": "0b8e19844e625e446ae332fc3c092b19af504c9500c05e74baa99afcf8d4b433"
+    },
+    {
+      "path": "tools/train.mjs",
+      "category": "first-party-code-test-data",
+      "method": "all lines read",
+      "lines": 48,
+      "bytes": 1864,
+      "gitBlobSha256": "f2d04c3b8a07e95c7a381f214b3184f209b638d359a3980d3aafde8ac95ab3e5"
+    }
+  ],
+  "followUp": {
+    "request": "グロックが登録されてない",
+    "interpretation": "Grok (xAI); assumption stated in chat",
+    "changes": [
+      {
+        "path": "native/mozc/english-dictionary.tsv",
+        "lines": 257,
+        "sha256": "f32247a47b6a78d794bd00fd6430d8a50e051d98b21b946c1798dcf0af78b14e",
+        "method": "all changed lines reviewed; actual converter and session confirmation tested"
+      },
+      {
+        "path": "test/fixtures/mozc-english-conversion.tsv",
+        "lines": 67,
+        "sha256": "5e0f484795629586e6093c4d677e105dd663fb935a6047da651e30ed64cb70ad",
+        "method": "all changed lines reviewed; actual converter and session confirmation tested"
+      }
+    ],
+    "validation": {
+      "before": "Grok candidate submission and result failed in all three kana modes; exit 1",
+      "after": "updated dictionary converter and full session fixture passed; independent rerun exit 0",
+      "nodeTests": {
+        "passed": 57,
+        "failed": 0,
+        "skipped": 0
+      },
+      "dictionarySha256": "e9de225e4c406e0f79843b7c6ab7544c222731738e75ac47c0ac29c6ffc6639a",
+      "installed": false,
+      "modelRetrained": false
+    }
+  }
+}
