@@ -1,0 +1,14 @@
+**********************************************************************
+** Visual Studio 2022 Developer PowerShell v17.14.45
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+utf8proc.c
+C:\Users\user\Desktop\CatJapaneseInput\native\mozc\third_party\utf8proc\utf8proc.c(436): warning C4244: 'return': 'const unsigned int' から 'utf8proc_bool' への変換です。データが失われる可能性があります。
+catj_context.cc
+catj_context_model.cc
+コードを生成中...
+probe.cc
+model-probe.cc
+catj_context_test.cc
+catj_context_model_test.cc
+C:\Users\user\Desktop\CatJapaneseInput\native\mozc\catj_context_model_test.cc(34): warning C4389: '==': signed と unsigned の数値を比較しようとしました。

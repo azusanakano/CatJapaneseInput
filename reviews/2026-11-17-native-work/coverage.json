@@ -1,0 +1,80 @@
+[
+  {
+    "file": "native/mozc/catj_context.cc",
+    "lines": 175,
+    "bytes": 6306,
+    "sha256": "85928ccdf344678a22d9d086ce658414fbfa7ce839eccd04619cb7c7be0d260e"
+  },
+  {
+    "file": "native/mozc/catj_context.h",
+    "lines": 35,
+    "bytes": 831,
+    "sha256": "a4aeae4abd6d606c2157b6726b3064c7c636e87690f4058d605af4a153721551"
+  },
+  {
+    "file": "native/mozc/catj_context_model.cc",
+    "lines": 343,
+    "bytes": 13390,
+    "sha256": "1940d0b6ed1783cd3d2261b423d3e28bff6e59419e7f592124625c29aed70fb7"
+  },
+  {
+    "file": "native/mozc/catj_context_model.h",
+    "lines": 75,
+    "bytes": 2321,
+    "sha256": "85379bd0de1934ebb2e5cf9d071cd58c8c243399148b957dff850ed42f0a01de"
+  },
+  {
+    "file": "native/mozc/catj_context_test.cc",
+    "lines": 84,
+    "bytes": 3193,
+    "sha256": "4899b73a0a5ded920eb1f375731fc6d56c9ab0f06e09ce77980001447a60fdf8"
+  },
+  {
+    "file": "native/mozc/catj_context_model_test.cc",
+    "lines": 104,
+    "bytes": 3713,
+    "sha256": "3fdbbcac61d6a8caaaf9711698fe690b25a12b5aa00952ebe99a460a12755903"
+  },
+  {
+    "file": "native/mozc/catj_packaged_model.cc",
+    "lines": 57,
+    "bytes": 1560,
+    "sha256": "cd969c7e08f39f270f61987f76ccb997f5f4a3dbb2a1a42f5bf2c564a6677abc"
+  },
+  {
+    "file": "native/mozc/catj_packaged_model.h",
+    "lines": 17,
+    "bytes": 430,
+    "sha256": "2c0ab4d1aed184985ea48202e926c3a0b68c8e0e2527149f06ee117714cf196d"
+  },
+  {
+    "file": "native/mozc/BUILD.bazel",
+    "lines": 59,
+    "bytes": 1583,
+    "sha256": "625453ca28a6eae30b45c5a0acb641911939eed2911c469b4cc891964ab635d6"
+  },
+  {
+    "file": "native/mozc/third_party/utf8proc/LICENSE.md",
+    "lines": 93,
+    "bytes": 5125,
+    "sha256": "3b510150d34f248a221bb88e1d811238d6c6c18b51231822c42974c39bb07256"
+  },
+  {
+    "file": "native/mozc/third_party/utf8proc/utf8proc.c",
+    "lines": 838,
+    "bytes": 33114,
+    "sha256": "edf80118fd34796bcabef4567cc684adebc7058f2afe8cfdc11b7a78e383ed84"
+  },
+  {
+    "file": "native/mozc/third_party/utf8proc/utf8proc.h",
+    "lines": 800,
+    "bytes": 34049,
+    "sha256": "a4e498b7392c383cf3b22e662da21e0b48f1264806235d87b5d8bd166232f658"
+  },
+  {
+    "file": "native/mozc/third_party/utf8proc/utf8proc_data.c",
+    "lines": 17141,
+    "bytes": 2360214,
+    "sha256": "950e549dbfc853c4304425f3af1875e72fa9fc9697c273c763400c2da4e380a7"
+  }
+]

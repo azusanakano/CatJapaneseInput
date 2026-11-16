@@ -1,0 +1,7 @@
+{"status":0,"signal":null}
+PASS Stops when SignTool cannot be started, even after exit code zero
+PASS Restores licenses and Qt source even if an old extraction contains only the MSI
+PASS Replaces the old ZIP and checksum on a successful rerun
+PASS Leaves the last valid output in place when signature verification warns
+PASS Restores the old checksum when Windows refuses to replace the ZIP
+

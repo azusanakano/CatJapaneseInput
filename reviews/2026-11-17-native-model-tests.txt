@@ -1,0 +1,11 @@
+✔ the native export stores both trained heads and exact signed INT8 bytes (12.1324ms)
+✔ the native export rejects a malformed quantized parameter (12.0911ms)
+✔ the native model validates the blob and matches JS INT8 scores for both contexts and heads (384.2502ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3387.9912

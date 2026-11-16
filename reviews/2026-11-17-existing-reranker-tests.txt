@@ -1,0 +1,19 @@
+[==========] Running 5 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 5 tests from CatjRerankerTest
+[ RUN      ] CatjRerankerTest.PromotesLeftmostAndPreservesProtectedPositions
+[       OK ] CatjRerankerTest.PromotesLeftmostAndPreservesProtectedPositions (0 ms)
+[ RUN      ] CatjRerankerTest.DoesNotReplaceACandidateAfterItsDeadline
+[       OK ] CatjRerankerTest.DoesNotReplaceACandidateAfterItsDeadline (30 ms)
+[ RUN      ] CatjRerankerTest.NeverScoresPastEightNormalSlots
+[       OK ] CatjRerankerTest.NeverScoresPastEightNormalSlots (0 ms)
+[ RUN      ] CatjRerankerTest.KeepsCrossSegmentAndPartialCandidatesInTheirSlots
+[       OK ] CatjRerankerTest.KeepsCrossSegmentAndPartialCandidatesInTheirSlots (0 ms)
+[ RUN      ] CatjRerankerTest.RejectsInvalidScoresAndExpirations
+[       OK ] CatjRerankerTest.RejectsInvalidScoresAndExpirations (0 ms)
+[----------] 5 tests from CatjRerankerTest (30 ms total)
+
+[----------] Global test environment tear-down
+[==========] 5 tests from 1 test suite ran. (30 ms total)
+[  PASSED  ] 5 tests.
+Failed to match any benchmarks against regex: .

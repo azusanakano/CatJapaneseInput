@@ -1,0 +1,42 @@
+[
+  {
+    "file": "utf8proc.c",
+    "url": "https://raw.githubusercontent.com/JuliaStrings/utf8proc/v2.11.3/utf8proc.c",
+    "byteEqual": true,
+    "bytes": 33114,
+    "sha256": "edf80118fd34796bcabef4567cc684adebc7058f2afe8cfdc11b7a78e383ed84"
+  },
+  {
+    "file": "utf8proc.h",
+    "url": "https://raw.githubusercontent.com/JuliaStrings/utf8proc/v2.11.3/utf8proc.h",
+    "byteEqual": true,
+    "bytes": 34049,
+    "sha256": "a4e498b7392c383cf3b22e662da21e0b48f1264806235d87b5d8bd166232f658"
+  },
+  {
+    "file": "utf8proc_data.c",
+    "url": "https://raw.githubusercontent.com/JuliaStrings/utf8proc/v2.11.3/utf8proc_data.c",
+    "byteEqual": true,
+    "bytes": 2360214,
+    "sha256": "950e549dbfc853c4304425f3af1875e72fa9fc9697c273c763400c2da4e380a7"
+  },
+  {
+    "file": "LICENSE.md",
+    "url": "https://raw.githubusercontent.com/JuliaStrings/utf8proc/v2.11.3/LICENSE.md",
+    "byteEqual": true,
+    "bytes": 5125,
+    "sha256": "3b510150d34f248a221bb88e1d811238d6c6c18b51231822c42974c39bb07256"
+  },
+  {
+    "file": "GraphemeBreakTest.txt",
+    "url": "https://www.unicode.org/Public/17.0.0/ucd/auxiliary/GraphemeBreakTest.txt",
+    "bytes": 126570,
+    "sha256": "e2d134d2c52919bace503ebb6a551c1855fe1a1faec18478c78fff254a1793ec"
+  },
+  {
+    "file": "NormalizationTest.txt",
+    "url": "https://www.unicode.org/Public/17.0.0/ucd/NormalizationTest.txt",
+    "bytes": 2827429,
+    "sha256": "5019ffd530751a741900c849c0e010332f142a3612234639bd200b82138a87db"
+  }
+]

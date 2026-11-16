@@ -1,0 +1,12 @@
+{
+  "node": "v24.22.1",
+  "unicode": "17.0",
+  "icu": "78.3",
+  "graphemeCases": 766,
+  "normalizationRows": 20034,
+  "normalizationChecks": 100170,
+  "contextCases": 10886,
+  "independentClippedBoundaryChecks": 675,
+  "invalidUtf8Cases": 15,
+  "status": "pass"
+}

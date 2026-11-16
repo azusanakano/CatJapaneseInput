@@ -1,0 +1,17 @@
+[==========] Running 4 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 4 tests from TipSurroundingTextUtilTest
+[ RUN      ] TipSurroundingTextUtilTest.CatjGateRequiresTrustedEditorAndValidScope
+[       OK ] TipSurroundingTextUtilTest.CatjGateRequiresTrustedEditorAndValidScope (0 ms)
+[ RUN      ] TipSurroundingTextUtilTest.ScopeValueUnavailableRequiresVerifiedNotepadBody
+[       OK ] TipSurroundingTextUtilTest.ScopeValueUnavailableRequiresVerifiedNotepadBody (0 ms)
+[ RUN      ] TipSurroundingTextUtilTest.OnlyExplicitlyUnsupportedAppPropertyIsAbsent
+[       OK ] TipSurroundingTextUtilTest.OnlyExplicitlyUnsupportedAppPropertyIsAbsent (0 ms)
+[ RUN      ] TipSurroundingTextUtilTest.MeasureCharactersBackward
+[       OK ] TipSurroundingTextUtilTest.MeasureCharactersBackward (0 ms)
+[----------] 4 tests from TipSurroundingTextUtilTest (0 ms total)
+
+[----------] Global test environment tear-down
+[==========] 4 tests from 1 test suite ran. (0 ms total)
+[  PASSED  ] 4 tests.
+Failed to match any benchmarks against regex: .
