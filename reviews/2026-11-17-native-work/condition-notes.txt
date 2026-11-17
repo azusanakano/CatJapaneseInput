@@ -1,0 +1,54 @@
+MSI条件評価用セッションハンドルの安全な作成
+2026-11-17
+
+condition-probe.cc と condition-build.ps1 をMSVC x64で実行して成功。
+製品コードおよび test/default-input.test.ps1 は編集していない。
+
+方法:
+1. 同一スレッドで CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)。
+2. ワークスペース内の未作成MSIパスに MsiOpenDatabaseW(..., MSIDBOPEN_CREATE, ...)。
+3. PropertyテーブルとProductCode/ProductName/ProductVersion/ProductLanguage/Manufacturerだけを作成。
+4. Summary InformationにTemplate("Intel;1033")、PackageCode、PageCount(200)、WordCount(0)を設定。
+5. MsiSummaryInfoPersistとMsiDatabaseCommit。DBハンドルを閉じる。
+6. MsiOpenPackageExW(path, MSIOPENPACKAGEFLAGS_IGNOREMACHINESTATE, &install)。
+7. MsiSetPropertyWで試験ケースのプロパティを設定し、MsiEvaluateConditionW(install, condition)。
+8. installをPMSIHANDLEで閉じ、CoUninitialize。
+
+MsiDoAction/MsiInstallProduct/実custom action/Registry APIは呼んでいない。
+Feature/File/Registry/InstallExecuteSequence等の処理用テーブルも作っていない。
+IGNOREMACHINESTATE指定のrestricted handleは、Microsoftの仕様上machine stateを変更できない。
+出力MSIは reviews/2026-11-17-native-work/condition-fixture-<GUID>.msi のみ。
+このプログラムは既存ファイルの上書きを拒否する。
+
+実行した現行条件:
+  (NOT (REMOVE="ALL")) AND (NOT Installed)
+
+結果:
+  fresh install                   TRUE  (1)
+  major upgrade                  TRUE  (1)
+  repair                         FALSE (0)
+  uninstall                      FALSE (0)
+  old product removal in upgrade FALSE (0)
+  valid handle + literal "1"      TRUE  (1)
+  null handle + literal "1"       ERROR (3)
+  Installed property value "0"    TRUE  (1)
+
+注意:
+  falseプロパティは L"0" でなく L"" をMsiSetPropertyWへ渡して削除する。
+  プロパティ値が文字列"0"でも存在判定は真になることを実APIで確認した。
+  UPGRADING/UPGRADINGPRODUCTCODEも各ケースで明示的に設定または削除する。
+  MSIDBOPEN_CREATEマクロはTCHAR型なので、明示W関数を使うハーネスではUNICODE/_UNICODEをdefineする。
+  PID_TEMPLATE等は <msidefs.h>、VT_LPSTR/VT_I4は <propidl.h>、COM初期化は <objbase.h>。
+  リンクは ole32.lib msi.lib。
+
+一次資料:
+https://learn.microsoft.com/en-us/windows/win32/api/msi/nf-msi-msiopenpackageexw
+  IGNOREMACHINESTATEハンドルの制限とCOM初期化要件。
+https://learn.microsoft.com/en-us/windows/win32/api/msiquery/nf-msiquery-msievaluateconditionw
+  hInstallはMsiOpenPackage(Ex)/MsiOpenProduct等から得る必要がある。
+https://learn.microsoft.com/en-us/windows/win32/api/msiquery/nf-msiquery-msisetpropertyw
+  nullまたは空文字でプロパティを削除する。
+https://learn.microsoft.com/en-us/windows/win32/api/msiquery/nf-msiquery-msiopendatabasew
+  作成モードとcommit要件。
+https://learn.microsoft.com/en-us/windows/win32/msi/summary-information-stream-property-set
+  SummaryのPID/データ型。

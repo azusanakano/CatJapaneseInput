@@ -1,0 +1,10 @@
+SET_CONFIG	history_learning_level	NO_HISTORY
+SEND_KEY	on
+SEND_KEYS	toukyou
+SEND_KEY	space
+SUBMIT_CANDIDATE_BY_VALUE	東京
+EXPECT_RESULT	東京
+SEND_KEY_WITH_OPTION	t	context.revision=0	context.preceding_text=""
+SEND_KEY	o
+SEND_KEY	space
+EXPECT_PREEDIT	と

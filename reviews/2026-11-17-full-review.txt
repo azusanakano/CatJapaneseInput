@@ -1,0 +1,220 @@
+CatJapaneseInput 全行レビューと既定入力機能の実装結果
+実施日: 2026-11-17 / Asia/Tokyo
+
+全体レビューの結論
+
+修正対象を5件確認した。優先度P2が3件、P3が2件で、そのうち新規発見は1件。
+新規のP2は、文脈によって「箸」を表示した後にサーバーセッションが失効すると、
+履歴再生後のEnterで「橋」を確定する問題である。関連ソースを再コンパイルして
+再現した。残る4件は以前の指摘が未修正であることを今回改めて検証したもの。
+これらの所見は未修正であり、既定入力機能の試験合格を製品全体の出荷判定には使えない。
+
+追加依頼の「インストール時に既定の日本語入力にする」はソースへ実装した。
+新規インストールとメジャーアップグレードの成功時に、その実行ユーザーの
+CatJapaneseInputを既定にする。修復では後から選んだ設定を維持する。
+追加機能の19試験は成功。MSI全体の再ビルド・署名・実インストールは行っていない。
+既存distのMSI/ZIPにはこの機能は入っておらず、新しいソースからの再ビルドが必要。
+
+レビュー対象と数え方
+
+開始時コミット: 6e359013106f94bc056c8c39294618d9334835e0
+固定版Mozc: a4541df29db443b49f81cf54665873b68fde9efa
+実装ブランチ: codex/default-japanese-input
+作業中のc64dd11はレビュー証跡追加で、製品ソースの基準は変わっていない。
+
+開始時の追跡対象63ファイルを分類した。
+・コード、パッチ、設定、試験、設計・利用資料など51ファイル8,772物理行を全行確認。
+・過去の再現用コード2ファイル116行も全行確認。合計53ファイル8,888行。
+・上記には第三者utf8proc実装・ヘッダー・ライセンス3ファイル1,731行を含む。
+・生成Unicode表1ファイル17,141行は公式v2.11.3との全バイト一致と公式期待値で確認。
+  各数値を人手で仕様から再導出した、という意味の全行レビューには含めない。
+・既存レビュー文書等8ファイルは過去指摘との比較用資料として参照。
+・配布ZIP1ファイルはZIP自身と収録43ファイルのSHA-256を検証。
+
+パッチは追加行だけでなく削除・コンテキストも読み、固定版上流の呼出し側へ遡った。
+元の6パッチ97 hunksを公式固定版45ファイルと照合し、全件の適用元が一致した。
+新しい既定入力機能はこの基準レビューとは別に、実パッチ適用・関数コンパイル・
+実Windows Installer条件評価と独立した差分レビューで確認した。
+試験用上流fixture2ファイルは公式固定版のGit blobとの一致も確認した。
+
+全ファイルの行数・SHA-256・確認方法:
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-full-files.json
+この一覧は開始時のスナップショットであり、追加機能後のREADME/brand.patchとは区別する。
+
+指摘1 [P2 / 新規] セッション復旧後に表示と違う表記を確定する
+
+場所: C:/Users/user/Desktop/CatJapaneseInput/tools/mozc/catj-context-server.patch:30-35
+条件: 文脈付きSpaceで候補が昇格し、表示後からEnter確定までの間にセッションが失効する。
+原因: Clientがcatj_preceding_utf16le/left_clippedを消して履歴を保存する。再作成時の
+PlaybackHistoryではSpaceだけが再生され、文脈モデルが適用されず元の候補順になる。
+TSFのOnTestKeyは復旧応答のpreeditを文書へ反映せず、その後のOnKeyで確定出力を適用する。
+実際: 読みhashi、文脈「夕食のため、箸を探した。\r\n」。表示は「箸」、失効後の確定は「橋」。
+失効しない対照では表示・確定とも「箸」。Spaceにsnapshotがあるかは[true]と[true,false]。
+セッションには標準の無操作タイムアウトによる削除経路もある。
+修正方向: 復旧境界で表示済み候補と確定対象の対応を検証し、復元できない場合は
+確定を通さず再同期・再選択に戻す。生の周辺文を無条件に履歴へ保存する方法は、
+一回限りの利用と機密性の設計を壊す可能性があるため別途検討が必要。
+検証水準: 公式固定版+基準パッチのClient/EngineConverter/rerankerをMSVCで再コンパイル。
+ソースSHAとlink mapを確認。実Client・SessionHandler・Engineを隔離IPC adapterで実行し、
+そのセッションだけを削除して対照と比較した。実GUI表示や実プロセス終了は未実測。
+証拠: C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-patches-replay/source-provenance.json
+
+指摘2 [P2 / 既存未修正] 同じ編集欄での移動・削除後も古い短期履歴が残る
+
+場所: C:/Users/user/Desktop/CatJapaneseInput/tools/mozc/catj-context-tsf.patch:101-110
+条件: 「東京」を確定した後、フォーカスを保って先行文字を削除、または文頭へ移動して入力。
+原因: 通常キーでpreceding_textを送らなくなった一方、revisionはfocusの変更しか表さない。
+上流OnStartCompositionは先行文欠落・同じrevisionなら短期履歴を継続する。
+実際: NO_HISTORY設定の実session_handler_mainで「東京」確定後に「と」を変換すると、
+先行文欠落・同じrevisionは「都」、明示空文字またはrevision更新は「と」が先頭になる。
+修正方向: 文書・選択の変更を追跡し、入力の連続性が切れた時点でrevision更新または
+短期履歴resetを送る。自然な連続入力の履歴を保つ試験と、欄内移動後の破棄を対にする。
+限界: 実変換器による差は確認したが、実TSF GUIでの移動イベントを直接操作してはいない。
+証拠: C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-patches-history-results.json
+
+指摘3 [P2 / 既存未修正] Windows PowerShell 5.1で準備が停止する
+
+場所: C:/Users/user/Desktop/CatJapaneseInput/tools/mozc/stage-context-ime.ps1:23
+関連: 同ファイル43-44行。
+条件: Windows標準のpowershell.exe 5.1でREADMEの準備手順を実行する。
+原因: 正常な未適用checkoutでもreverse-checkは失敗する。ErrorActionPreference=Stopと
+2>$nullの組合せが5.1でNativeCommandErrorを発生させ、LASTEXITCODEの分岐まで進まない。
+さらに初期状態の5.1ではMicrosoft.VisualBasic.StringsがTypeNotFoundとなる。
+修正方向: PowerShell 7を準備手順の要件として明示し、変更前にversion checkで止めるか、
+5.1向けにnative stderr処理とVisualBasic assemblyの読込みを実装する。
+検証: Windows PowerShell 5.1.26100.9818を明示起動。隔離Git fixtureのreverse-checkと
+StrConvを個別に再現し、いずれもexit 1。新しいinstaller試験のPS7指定だけでは解決しない。
+証拠: C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-patches-stage-results.json
+
+指摘4 [P3 / 既存未修正] 部分消費属性と全消費ラベルの矛盾を受理する
+
+場所: C:/Users/user/Desktop/CatJapaneseInput/lib/ranking.mjs:62-66
+関連: 同24-31行、lib/evaluate.mjs:48-50、lib/model.mjs:165-180。
+条件: 外部・手製のprediction入力にconsumption='full'と
+attributes=['PARTIALLY_KEY_CONSUMED']を同時に指定する。
+実際: 部分消費候補を学習対象・昇格対象・直接確定可能な正解として数える。
+標準captureは属性からpartialを設定するため、未加工の通常採取では起きない。
+修正方向: 検証時に矛盾を拒否するか、属性を優先した共通の消費判定を使う。
+証拠: C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-model-checks.mjs
+
+指摘5 [P3 / 既存未修正] nullラベルの扱いが学習と評価で違う
+
+場所: C:/Users/user/Desktop/CatJapaneseInput/lib/model.mjs:166-170
+関連: lib/evaluate.mjs:5-12。
+条件: 有効な別ラベルを持つsampleでtargets=null、またはacceptedTexts=nullを指定する。
+実際: 学習は?? []で省略と見なして成功し、同じデータを評価すると配列検証で失敗する。
+正しい配列ラベルを使う場合には影響しない。
+修正方向: ラベル検証を共有し、両入口で省略とnullの扱いをそろえる。
+証拠: C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-model-checks.mjs
+
+問題を認定しなかった部分の確認
+
+文脈と編集プロトコル: context.mjs、edit-protocol.mjsと全テストを全行確認した。
+未取得と空行の区別、NFC・書記素境界、3行・128点上限、切断、所有するsnapshotの扱い、
+revision/focus/versionと候補ID、nonce、Prepare/Apply/Ack、期限、重複・順不同、障害後の
+フォールバックを照合した。既存Ack時計の問題は修正済みで、再掲しない。
+このJSプロトコルは試作モデルであり、ネイティブTSFへ接続済みとは評価していない。
+別プロセスへ接続する場合の時計の基準やexpiryの駆動は、統合時に明示すべき事項として扱う。
+
+学習・評価: 特徴順、同一候補群の基準コスト、保護属性、固定文節、最大4文節/8枠、
+1回の昇格、厳密閾値、複数正例、量子化・形式検査、全件分母とoracleを確認した。
+評価器は独立した全候補列挙と1,000ケース照合して一致。ただし昇格可能集合は共通関数を
+使うので、その集合の独立証明とはせず、集合自体は別途コード・境界値で確認した。
+保護属性がkind省略で失われる過去の問題は修正済み。
+
+ネイティブ: UTF-16LE/UTF-8境界、utf8procの所有権とNUL、モデルの固定寸法・尺度・INT8、
+辞書hash、ビューの寿命、モデルの共有所有、スコアの有限性、ロックと期限を確認した。
+SHA-256は実BCryptで一致・不一致・空辞書を検証。モデルロードはサーバー側であり、
+DLL loader lock配下の実行経路は見つからなかった。
+
+採取・配布: captureの固定コミット・文字コード・パス・読取境界・一時profile・失敗時の
+件数維持・排他的出力と、署名コマンドの終了・検証・ZIP/sha256の置換/復元を確認した。
+日本語パスの過去の問題はUTF-8 flagfileに修正済み。既存配布ZIPのhashは一致したが、
+hash一致だけでは現在のソースとのビルド同一性・署名・動作品質を保証しない。
+
+辞書・TSF: 275辞書行と3試験TSVを全行確認し、文字種展開825行の完全重複なしを確認。
+GUID、IPC、サービス、保存先、製品名の分離と、メモ帳・通常編集欄・selection/composition・
+同期読取・最大1024 UTF-16単位の取得条件を追跡した。culture依存の文字種同一視を
+辞書の重複と誤認しないよう、ordinalによる検証結果で判断した。
+
+実行検証の集計
+
+・node --test: 57件中56成功、0失敗、1スキップ。
+  今回のソースからビルドしたnative model probeをCATJ_NATIVE_MODEL_TESTへ指定。
+  スキップはCATJ_MOZC_CHECKOUTを必要とする日本語パスの実converter試験。
+  固定版のGit管理された完全なビルド済みcheckoutが利用できず、この条件は満たしていない。
+・test/package-release.test.ps1: 5件成功。偽SignToolを使う障害試験で、本物の署名ではない。
+・test/default-input.test.ps1: 19件成功。実パッチ適用後の関数をMSVCでコンパイル。
+  Windows設定書込とtoken/MSIメッセージ境界を代替し、条件は本物のWindows Installerで評価。
+・現在のネイティブcontext試験: 成功。
+・公式Unicode 17.0: GraphemeBreak 766件、NFC 100,170入力で一致。
+・JS/C++文脈比較10,886入力、独立境界期待値675件、不正UTF-8拒否15件で一致。
+・JS/C++モデル1,200入力を両headで比較、最大差1.5543122344752192e-15。
+  mode全256値、尺度91境界、破損形式33例、不正必須特徴10例も確認。
+・学習/評価CLI: 不正UTF-8、空入力、物理行番号、辞書不一致、2MiB境界、入力hash、
+  既存出力保護を確認。不正モデル15種類、exportでは適用可能な14種類の拒否を確認。
+・既存ビルドのreranker 5試験、TSF周辺文4試験も成功。全体の新規ビルドとは区別する。
+・元パッチの公式ソース照合97 hunksと、追加installer patchの実適用を確認。
+・配布ZIP b26efc43c06d7ab2379a877383ab45461360b24fe700e7e393202f3452d845e0、
+  44エントリー内のmanifest対象43ファイルのhash一致。署名や公開操作は行っていない。
+
+判断の再点検（メタレビュー）
+
+・最初の読みと仮説整理後に過去のレビューと照合し、既存結論への追従を避けた。
+  新規1件、再確認4件、修正済み、未立証の疑いを分けた。
+・共通コード同士の一致だけに依存せず、Unicode公式期待値、独立列挙、実Windows API、
+  状態を一つだけ変えた対照ケースを用いた。独立性がない箇所も明記した。
+・古いバイナリの成功だけで現ソースを保証しないよう、新規の誤確定問題は関連する
+  3翻訳単位を再ビルドし、内容とリンク先を確認した。他の再利用ライブラリは明示した。
+・JS/nativeの複数文節・部分消費候補の差は、通常capture経路で発生する根拠が不足し、
+  追加の不具合には数えなかった。小規模な合成入力での改善を一般精度の改善とも扱わない。
+・installerのサービスhostと実効ユーザーの違いを独立レビューで再検討し、thread token優先、
+  ERROR_NO_TOKEN時だけprocess fallback、実効tokenのSession 0除外へ反映した。
+・試験ハーネスの失敗を製品不具合と混同していない。MSI条件評価には有効な制限付き
+  package handleが必要であり、初期ハーネスを修正後に基準のREDと実装のGREENを取り直した。
+・全行を読むことと全状態を証明することは異なる。未検証事項を下記に残す。
+
+追加機能の最終仕様と検証限界
+
+変更: C:/Users/user/Desktop/CatJapaneseInput/tools/mozc/catj-brand.patch
+試験: C:/Users/user/Desktop/CatJapaneseInput/test/default-input.test.ps1
+説明: C:/Users/user/Desktop/CatJapaneseInput/README.md:83
+
+既存EnableTipProfile commit actionのImpersonate=yesを保ち、InstallLayoutOrTipに
+ILOT_DEFPROFILEを渡す。実行条件はNOT REMOVE=ALLかつNOT Installed。
+通常の新規・major upgradeで実行し、repair/uninstall/旧製品削除では実行しない。
+他のIMEを削除・無効化せず、Default Userテンプレートも変更しない。
+実効ユーザーを判別できない場合・サービスアカウント・Session 0は設定を行わない。
+Windows設定APIが失敗した場合はMSIのINFOログに手動設定案内を残し、ファイル導入は成功扱い。
+ロールバック無効時はcommit actionそのものが実行されないため手動設定が必要。
+
+RED記録: 旧実装の機能差4件、thread identity追加時3件、Session 0追加時2件の失敗を確認。
+最終GREENは19件。INFOログの種別・案内文、ハンドル解放、他の入力方法を維持するflagsも確認。
+TsfProfile/StrCatWやアカウントAPI境界は試験用代替であり、実OSの既定値変更、完全な
+custom action DLL/MSIのリンク・署名・インストール・アップグレードは未検証。
+既存MSIをこの端末へ実行せず、入力設定・外部checkoutを変更していない。
+
+その他の未検証
+
+実TSF GUI全体、全アプリ互換性、実サーバー停止/60分失効、OS設定反映と再ログオン、
+クリーン環境でのMozc/Bazel全体ビルド、実証明書による署名、配布binaryのソース再現性、
+独立した実文書での精度、近似重複のない評価、量子化前後の一般精度、実機の遅延・常駐量。
+READMEが将来範囲とする予測・非同期cache・Prepare/Apply/Ack接続も完成とは判定していない。
+
+詳細報告・実行記録
+
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-model-report.txt
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-native-report.txt
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-patches-review.txt
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-final-node-tests.txt
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-package-tests.txt
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-default-input-green.txt
+C:/Users/user/Desktop/CatJapaneseInput/reviews/2026-11-17-archive-check.json
+
+外部の一次資料（追加機能）
+https://learn.microsoft.com/en-us/windows/win32/tsf/installlayoutortip
+https://learn.microsoft.com/en-us/windows/win32/msi/rollbackdisabled
+https://learn.microsoft.com/en-us/windows/win32/msi/custom-action-in-script-execution-options
+https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-openthreadtoken
+https://learn.microsoft.com/en-us/windows/win32/api/msi/nf-msi-msiopenpackageexw
+https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/base/win32/win_util.cc

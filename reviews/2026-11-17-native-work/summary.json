@@ -1,0 +1,38 @@
+{
+  "head": "6e359013106f94bc056c8c39294618d9334835e0",
+  "findings": [],
+  "manualLines": 2680,
+  "generatedLines": 17141,
+  "unicode": {
+    "node": "v24.22.1",
+    "unicode": "17.0",
+    "icu": "78.3",
+    "graphemeCases": 766,
+    "normalizationRows": 20034,
+    "normalizationChecks": 100170,
+    "contextCases": 10886,
+    "independentClippedBoundaryChecks": 675,
+    "invalidUtf8Cases": 15,
+    "status": "pass"
+  },
+  "model": {
+    "status": "pass",
+    "scoreParityCases": 1200,
+    "maxAbsoluteDifference": 1.5543122344752192e-15,
+    "modeValues": 256,
+    "scaleBoundaryCases": 91,
+    "invalidEnvelopeCases": 33,
+    "invalidRequiredFeatureCases": 10
+  },
+  "packagedLoader": {
+    "status": "pass",
+    "fixture": "synthetic dictionary containing embedded NUL, matching generated embedded model",
+    "checks": [
+      "matching dictionary",
+      "mismatching dictionary",
+      "empty dictionary",
+      "both trained heads"
+    ]
+  },
+  "report": "reviews/2026-11-17-native-report.txt"
+}

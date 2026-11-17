@@ -1,0 +1,63 @@
+{
+  "date": "2026-11-17",
+  "branch": "codex/default-japanese-input",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 15893,
+      "physicalLines": 158,
+      "sha256": "5ad93be6b7cbe652aa25828a8a13c647f6a3aa68beaa7fd54ecce9b3cf941bcc"
+    },
+    {
+      "path": "tools/mozc/catj-brand.patch",
+      "bytes": 36217,
+      "physicalLines": 751,
+      "sha256": "c58ca539f6192700a50209dec3ffb372925f1ed5c2fa2f351f665272ef97ca95"
+    },
+    {
+      "path": "test/default-input.test.ps1",
+      "bytes": 13555,
+      "physicalLines": 290,
+      "sha256": "e49c85cca1227ada9d55e7bdac19d0c4aa865c7624b5aa4dabf1067ab179f5ff"
+    },
+    {
+      "path": "test/fixtures/mozc-installer/README.txt",
+      "bytes": 615,
+      "physicalLines": 9,
+      "sha256": "d7ab25e4d845e79ea2d98d110319208691ded3d54b6b70e853b7139ee1b9ecd7"
+    },
+    {
+      "path": "test/fixtures/mozc-installer/src/win32/custom_action/custom_action.cc",
+      "bytes": 17690,
+      "physicalLines": 532,
+      "sha256": "74fde628877432f5b73ea2e757dbf3b7328c6abbc452638a3f7adeaf0bcf07d0"
+    },
+    {
+      "path": "test/fixtures/mozc-installer/src/win32/installer/installer_oss_64bit.wxs",
+      "bytes": 23414,
+      "physicalLines": 385,
+      "sha256": "ae613a87dc83b3321b04856b87b69d959b41bf79692f02f45645c59d5f3fdb81"
+    }
+  ],
+  "verification": {
+    "installer": {
+      "pass": 19,
+      "fail": 0,
+      "log": "reviews/2026-11-17-default-input-green.txt"
+    },
+    "node": {
+      "pass": 56,
+      "fail": 0,
+      "skip": 1,
+      "log": "reviews/2026-11-17-final-node-tests.txt"
+    },
+    "package": {
+      "pass": 5,
+      "fail": 0,
+      "log": "reviews/2026-11-17-package-tests.txt"
+    },
+    "fullMsiBuild": false,
+    "actualInstallation": false,
+    "actualInputPreferenceWrite": false
+  }
+}

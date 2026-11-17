@@ -1,0 +1,42 @@
+context-history-test.cc
+FAIL moving the caret invalidates old conversion history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL text deletion without selection movement invalidates history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL an application insertion invalidates history once
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+PASS empty or property-only edits retain continuous input history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+PASS the IME's own composition and commit keep continuous history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+PASS the IME's own no-op does not leave a deferred reset
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL an external edit after an IME edit is still detected
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL failed ownership lookup cannot authorize history reuse
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL failed selection lookup invalidates history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL failed text-change lookup invalidates history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL a missing change enumerator invalidates history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL failed range enumeration invalidates history
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+FAIL history invalidation survives downstream composition failure
+PASS composition/UI handling and HRESULT are preserved
+PASS edit-range enumerator is released
+PASS edit ownership is checked for this TSF client
+PASS history invalidation neither reads text nor requests another edit session

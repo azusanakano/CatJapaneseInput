@@ -1,0 +1,73 @@
+{
+  "baseline": "6e359013106f94bc056c8c39294618d9334835e0",
+  "pinnedMozc": "a4541df29db443b49f81cf54665873b68fde9efa",
+  "sources": [
+    {
+      "path": "src/client/client.cc",
+      "absolute": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-replay\\include\\client\\client.cc",
+      "sha256": "723e6d53162ffd1a4dfa867a0f85ca7bb5ade11bdcfc84a68aa6d6801276a103",
+      "normalizedSha256": "78c7657518f2099b82056f7cab7ba75dca4783006cc639e092ba06f9b3ac27ce",
+      "expectedNormalizedSha256": "78c7657518f2099b82056f7cab7ba75dca4783006cc639e092ba06f9b3ac27ce",
+      "matchesOfficialPlusReviewPatch": true
+    },
+    {
+      "path": "src/engine/engine_converter.cc",
+      "absolute": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-replay\\include\\engine\\engine_converter.cc",
+      "sha256": "4e3aec6abdf74a98a3b244cc2cedc055e4cb74b92ebf84648b01bc863245c067",
+      "normalizedSha256": "99dfd838ee8102820235076ac1f9e10fed7eaa01f9b5265ff90b2c35e1b8377d",
+      "expectedNormalizedSha256": "99dfd838ee8102820235076ac1f9e10fed7eaa01f9b5265ff90b2c35e1b8377d",
+      "matchesOfficialPlusReviewPatch": true
+    },
+    {
+      "path": "src/engine/catj_reranker.cc",
+      "absolute": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-replay\\include\\engine\\catj_reranker.cc",
+      "sha256": "19dc84e7ef4cab18b5463e6b53ab201d342dad3bc5a02a7630b819c7a94f84b6",
+      "normalizedSha256": "3fcee0b6e33b452dd1ccd32d703e6776e4abe3f81fc6316b0fec8dbb2e178dcc",
+      "expectedNormalizedSha256": "3fcee0b6e33b452dd1ccd32d703e6776e4abe3f81fc6316b0fec8dbb2e178dcc",
+      "matchesOfficialPlusReviewPatch": true
+    }
+  ],
+  "symbols": [
+    " 0001:0028fe70       ?EnsureCallCommand@Client@client@mozc@@AEAA_NPEAVInput@commands@3@PEAVOutput@53@@Z 0000000140290e70 f   client-reviewed.obj",
+    " 0001:00298000       ?Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z 0000000140299000 f   engine_converter-reviewed.obj",
+    " 0001:00298440       ?Convert@EngineConverterInterface@engine@mozc@@UEAA_NAEBVComposer@composer@3@@Z 0000000140299440 f i engine_converter-reviewed.obj",
+    " 0001:00298490       ?Convert@EngineConverterInterface@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBUConversionPreferences@23@@Z 0000000140299490 f i engine_converter-reviewed.obj",
+    " 0001:002984b0       ?Convert@EngineConverterInterface@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@@Z 00000001402994b0 f i engine_converter-reviewed.obj",
+    " 0001:0029d230       ?TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z 000000014029e230 f   catj_reranker-reviewed.obj",
+    " 0001:00293790       ??$InvokeObject@AEAV<lambda_1>@?P@??Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@5@AEBVContext@commands@5@AEBUConversionPreferences@45@@Z@NAEBUCandidateFeatures@catj@5@@functional_internal@lts_20260107@absl@@YANTVoidPtr@012@AEBUCandidateFeatures@catj@mozc@@@Z 0000000140294790 f   engine_converter-reviewed.obj",
+    " 0001:0029d140       ??R<lambda_1>@?1??TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@3@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z@QEBA@XZ 000000014029e140 f   catj_reranker-reviewed.obj",
+    " 0001:002a3ec0       ?dtor$5@?0??EnsureCallCommand@Client@client@mozc@@AEAA_NPEAVInput@commands@3@PEAVOutput@53@@Z@4HA 00000001402a4ec0 f   client-reviewed.obj",
+    " 0001:002a44f0       ?dtor$3@?0??Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z@4HA 00000001402a54f0 f   engine_converter-reviewed.obj",
+    " 0001:002a4500       ?dtor$4@?0??Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z@4HA 00000001402a5500 f   engine_converter-reviewed.obj",
+    " 0001:002a4510       ?dtor$6@?0??Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z@4HA 00000001402a5510 f   engine_converter-reviewed.obj",
+    " 0001:002a4520       ?dtor$7@?0??Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z@4HA 00000001402a5520 f   engine_converter-reviewed.obj",
+    " 0001:002a4760       ?dtor$1@?0??TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z@4HA 00000001402a5760 f   catj_reranker-reviewed.obj",
+    " 0003:013d1c38       $unwind$??R<lambda_1>@?1??TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@3@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z@QEBA@XZ 0000000141678c38     catj_reranker-reviewed.obj",
+    " 0003:013d1c54       $unwind$?Convert@EngineConverterInterface@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@@Z 0000000141678c54     engine_converter-reviewed.obj",
+    " 0003:013d1e40       $unwind$?dtor$1@?0??TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z@4HA 0000000141678e40     catj_reranker-reviewed.obj",
+    " 0003:013d2000       $unwind$?Convert@EngineConverterInterface@engine@mozc@@UEAA_NAEBVComposer@composer@3@@Z 0000000141679000     engine_converter-reviewed.obj",
+    " 0003:013d305c       $unwind$?EnsureCallCommand@Client@client@mozc@@AEAA_NPEAVInput@commands@3@PEAVOutput@53@@Z 000000014167a05c     client-reviewed.obj",
+    " 0003:013d3080       $cppxdata$?EnsureCallCommand@Client@client@mozc@@AEAA_NPEAVInput@commands@3@PEAVOutput@53@@Z 000000014167a080     client-reviewed.obj",
+    " 0003:013d3089       $stateUnwindMap$?EnsureCallCommand@Client@client@mozc@@AEAA_NPEAVInput@commands@3@PEAVOutput@53@@Z 000000014167a089     client-reviewed.obj",
+    " 0003:013d309a       $ip2state$?EnsureCallCommand@Client@client@mozc@@AEAA_NPEAVInput@commands@3@PEAVOutput@53@@Z 000000014167a09a     client-reviewed.obj",
+    " 0003:013d39c4       $unwind$?Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z 000000014167a9c4     engine_converter-reviewed.obj",
+    " 0003:013d39ec       $cppxdata$?Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z 000000014167a9ec     engine_converter-reviewed.obj",
+    " 0003:013d39f5       $stateUnwindMap$?Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z 000000014167a9f5     engine_converter-reviewed.obj",
+    " 0003:013d3a22       $ip2state$?Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@3@AEBVContext@commands@3@AEBUConversionPreferences@23@@Z 000000014167aa22     engine_converter-reviewed.obj",
+    " 0003:013d4590       $unwind$?TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z 000000014167b590     catj_reranker-reviewed.obj",
+    " 0003:013d45c4       $cppxdata$?TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z 000000014167b5c4     catj_reranker-reviewed.obj",
+    " 0003:013d45cd       $stateUnwindMap$?TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z 000000014167b5cd     catj_reranker-reviewed.obj",
+    " 0003:013d45d8       $ip2state$?TryRerankCatjConversion@engine@mozc@@YA_NAEAVSegments@converter@2@V?$FunctionRef@$$A6ANAEBUCandidateFeatures@catj@mozc@@@Z@lts_20260107@absl@@V?$time_point@Usteady_clock@chrono@std@@V?$duration@_JU?$ratio@$00$0DLJKMKAA@@std@@@23@@chrono@std@@@Z 000000014167b5d8     catj_reranker-reviewed.obj",
+    " 0004:00000030       ?scoring_mutex@?M@??Convert@EngineConverter@engine@mozc@@UEAA_NAEBVComposer@composer@4@AEBVContext@commands@4@AEBUConversionPreferences@34@@Z@4Vmutex@std@@A 00000001416c4030     engine_converter-reviewed.obj"
+  ],
+  "binary": {
+    "path": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-replay\\probe-reviewed.exe",
+    "sha256": "5ea0353bc8fde6440c6444f0138f33405eb2af5910bf8f32444e4876df81e7f3"
+  },
+  "execution": {
+    "status": 0,
+    "stdout": "{\"lost_session\":false,\"displayed\":\"箸\",\"committed\":\"箸\",\"test_returned_preedit\":true,\"sessions_created\":1,\"space_snapshots\":[true],\"mismatch\":false}\r\n{\"lost_session\":true,\"displayed\":\"箸\",\"committed\":\"橋\",\"test_returned_preedit\":true,\"sessions_created\":2,\"space_snapshots\":[true,false],\"mismatch\":true}\r\n",
+    "stderr": ""
+  },
+  "scope": "The three changed translation units were freshly compiled from official pinned source plus the baseline patch. Other Mozc/dependency libraries and generated protobuf were reused read-only. In-process IPC adapter uses the real Client, SessionHandler and Engine, deletes only its isolated session. No actual TSF UI or installed service was exercised."
+}

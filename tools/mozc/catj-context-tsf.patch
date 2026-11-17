@@ -31,6 +31,43 @@ index c71e773..3ab4117 100644
          ":tip_surrounding_text",
          "//base:util",
          "//base/win32:wide_char",
+diff --git a/src/win32/tip/tip_edit_session_impl.cc b/src/win32/tip/tip_edit_session_impl.cc
+--- a/src/win32/tip/tip_edit_session_impl.cc
++++ b/src/win32/tip/tip_edit_session_impl.cc
+@@ -590,10 +590,33 @@
+ HRESULT TipEditSessionImpl::OnEndEdit(TipTextService* text_service,
+                                       ITfContext* context,
+                                       TfEditCookie write_cookie,
+                                       ITfEditRecord* edit_record) {
++  // OnEndEdit runs for both our writes and application/other-service edits.
++  // InWriteSession identifies the writer even though this callback is read-only.
++  // Preserve continuous IME input, but invalidate history after external text
++  // or caret changes without reading or retaining the surrounding text.
++  BOOL own_write = FALSE;
++  if (context->InWriteSession(text_service->GetClientID(), &own_write) != S_OK ||
++      !own_write) {
++    BOOL selection_changed = FALSE;
++    bool invalidate =
++        edit_record->GetSelectionStatus(&selection_changed) != S_OK ||
++        selection_changed;
++    if (!invalidate) {
++      wil::com_ptr_nothrow<IEnumTfRanges> updates;
++      invalidate = edit_record->GetTextAndPropertyUpdates(
++                       TF_GTP_INCL_TEXT, nullptr, 0, &updates) != S_OK ||
++                   !updates || updates->Skip(1) != S_FALSE;
++    }
++    if (invalidate) {
++      // The existing revision is also a history-continuity generation.
++      text_service->GetThreadContext()->IncrementFocusRevision();
++    }
++  }
++
+   bool update_ui = false;
+   const HRESULT result = OnEndEditImpl(text_service, context, write_cookie,
+                                        edit_record, &update_ui);
+   if (update_ui) {
+     TipEditSessionImpl::UpdateUI(text_service, context, write_cookie);
+   }
 diff --git a/src/win32/tip/tip_keyevent_handler.cc b/src/win32/tip/tip_keyevent_handler.cc
 index 618c232..7690294 100644
 --- a/src/win32/tip/tip_keyevent_handler.cc

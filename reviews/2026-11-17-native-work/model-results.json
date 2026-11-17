@@ -1,0 +1,9 @@
+{
+  "status": "pass",
+  "scoreParityCases": 1200,
+  "maxAbsoluteDifference": 1.5543122344752192e-15,
+  "modeValues": 256,
+  "scaleBoundaryCases": 91,
+  "invalidEnvelopeCases": 33,
+  "invalidRequiredFeatureCases": 10
+}

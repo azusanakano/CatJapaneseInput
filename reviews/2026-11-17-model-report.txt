@@ -1,0 +1,149 @@
+学習・順位付け・評価の全行レビュー
+対象: HEAD 6e359013106f94bc056c8c39294618d9334835e0
+環境: Windows、Node.js 24.22.1、ICU 78.3、Unicode 17.0
+
+結論
+担当14ファイル、1,342物理行（空行・コメントを含む）をすべて読んだ。
+新しいP1/P2は確定していない。以前のレビューのP3を2件、現行コードで再現した。
+既存の「属性がある候補でもkind省略で保護を失う」問題は修正済み。
+製品コード、既存テスト、外部チェックアウトは変更していない。
+
+MR-20261117-01 / P3 / 未修正の既存指摘
+部分消費属性と全消費ラベルの矛盾を受理し、学習・評価に利用する。
+
+根拠:
+  lib/ranking.mjs:24-31 はattributesとconsumptionを個別に検証するだけ。
+  lib/ranking.mjs:62-66 はpredictionの全消費判定にconsumptionだけを使う。
+  lib/evaluate.mjs:48-50 もconsumptionだけで直接確定できるかを決める。
+  lib/model.mjs:165,174-180 は同じscoringGroupsを学習に使用する。
+
+再現入力:
+  mode='prediction', context='箸', acceptedTexts=['箸']。
+  文節reading='はし'。
+  候補0={id:0,reading:'はし',value:'橋',consumption:'full'}。
+  候補1={id:1,reading:'はし',value:'箸',consumption:'full',
+         attributes:['PARTIALLY_KEY_CONSUMED']}。
+
+実際:
+  scoringGroups=1, allCandidateReachable=1, displayedTargetReachable=1,
+  currentLine.firstCorrect=1, currentLine.promoted=1, oracle.firstCorrect=1。
+  trainModelは成功し、trainedModes=['prediction']になる。
+
+期待:
+  矛盾した候補を検証段階で拒否するか、部分消費属性を優先して除外する。
+  候補1のconsumptionだけをpartialに直すとscoringGroups=0,
+  allCandidateReachable=0, displayedTargetReachable=1,
+  currentLine.firstCorrect=0, currentLine.promoted=0, oracle.firstCorrect=0。
+  trainModelは正例のある採点群がないとして拒否する。
+
+限定と修正方向:
+  標準capture.mjs:101-107は属性からpartialを付けるため、この矛盾は通常の
+  未加工採取出力では生じない。外部・手製入力の検証整合性なのでP3とする。
+  消費判定を共有するか、validateSampleで属性と消費ラベルの矛盾を拒否する。
+  不正入力を学習・ランキング・全件評価の各入口に渡す回帰試験が必要。
+  既存review-2026-11-16-full.mdのR03と同件。
+
+一次根拠:
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/converter/attribute.h
+  PARTIALLY_KEY_CONSUMEDは一部読みの消費を表し、実際の長さはconsumed_key_size。
+
+MR-20261117-02 / P3 / 未修正の既存指摘
+学習だけが明示的なnullラベルを省略として扱う。
+
+根拠:
+  lib/model.mjs:166-170 はtargets/acceptedTextsに?? []を使用。
+  lib/evaluate.mjs:5-12 は省略値だけを[]にし、nullを配列検証で拒否。
+
+再現と実際:
+  1. 有効なprediction入力にacceptedTexts=['箸'], targets=nullを指定すると、
+     trainModelは成功。evaluateCasesは
+     'each target must contain one non-empty string per segment'で失敗。
+  2. 有効なconversion入力にtargets=[['箸']], acceptedTexts=nullを指定すると、
+     trainModelは成功。evaluateCasesは
+     'acceptedTexts must contain non-empty strings'で失敗。
+
+期待・修正方向:
+  README:129,135が説明する配列または省略の契約に合わせて両入口の検証をそろえる。
+  学習前にnullを拒否する共通ラベル検証が小さい修正。
+  仕様外入力の整合性であり、正しい配列ラベルの学習には影響しないためP3。
+  既存review-2026-11-16-full.mdのR04と同件。
+
+実行検証
+  コマンド: node reviews/2026-11-17-model-checks.mjs
+  終了コード: 0
+
+  - 評価器を独立した全候補組合せ列挙と1,000ケース照合。
+    conversion 485件、prediction 515件。
+    1-5文節、0-4候補、重複/空表記、固定文節、コマンド、full/partial/unknown、
+    許容全文の複数候補、操作数上限1-9を含む。
+    baselineの先頭正解・上位3件・完了・操作数・到達率、許可された各昇格に
+    対するoracleの先頭正解・上位3件・完了・操作数がすべて一致。
+    この検証では採点可能昇格集合を製品eligiblePromotionsから取得しており、
+    その集合自体の正しさの独立証明ではない。集合は別途全行・境界値で精査した。
+  - 5保護属性がkind='normal'を上書きして保護されることを再確認。
+  - 不正モデル15種類（形式、版、Unicode版、辞書、重複/未知モード、余剰/欠落
+    パラメータ、5尺度、INT8 -128、非正規base64）をloadModelが拒否。
+    外部辞書を指定しないexportNativeModelでは辞書不一致以外の14種類を拒否。
+  - CLI: 2 MiBちょうどのモデルを受理、2 MiB+1を拒否。
+  - CLI: 不正UTF-8・空入力を拒否。不正JSONの物理行3を正しく表示。
+  - CLI: 2行目の辞書不一致をtrain/evaluateともに行番号付きで拒否。
+  - CLI: trainingSourceSha256が実入力バイトのSHA-256と一致。
+  - CLI: 既存出力に対するtrainはEEXISTで失敗し、出力バイトを維持。
+  - 上の2件のP3も同スクリプトで再現。試験用ファイルはreviews内だけに排他的に
+    新規作成し、作成したパスを確認して個別に削除した。
+
+親担当がnode --test全体とネイティブ側の試験を実行するため、この担当では
+既存全テストを重複実行していない。追加プローブは完全な全入力証明ではない。
+
+全行確認の内訳
+  lib/candidate.mjs                       1-10   保護属性の集合とkindの優先順位。
+  lib/model.mjs                           1-289  特徴・隣接文節・順逆伝播・複数正例の
+                                               softmax損失・学習順・量子化・形式検証。
+  lib/ranking.mjs                         1-149  型/ID・4文節/8枠・128文字の前後上限・
+                                               消費・先頭候補・保護位置・厳密閾値。
+  lib/evaluate.mjs                        1-178  全文ラベル・DP・分母・固定/コマンド・
+                                               消費・1昇格oracle・辞書照合。
+  tools/train.mjs                         1-48   引数・UTF-8・辞書・元データハッシュ・wx。
+  tools/evaluate.mjs                      1-94   引数・行番号・2MiB読込境界・close。
+  tools/samples.mjs                       1-17   厳密UTF-8・JSONL・空入力・物理行番号。
+  tools/mozc/export-model.mjs             1-42   共通検証・固定ヘッダー・尺度・重み順。
+  tools/mozc/export-model.test.mjs         1-63   INT8バイト・2ヘッド・ネイティブ比較。
+  test/model.test.mjs                     1-86   学習/INT8・不正モデル・未学習モード。
+  test/ranking.test.mjs                    1-210  全採点制約・保護属性・コスト基準。
+  test/evaluate.test.mjs                   1-147  訂正操作・相関正解・分母・部分消費。
+  test/fixtures/candidates.jsonl          1-3    手製3例の読み・表記・文脈・正例。
+  native/mozc/smoke-training-input.jsonl   1-6    合成6例の読み・2種類の文脈・正例。
+
+補助確認
+  README 1-148を読み、特に123-148の評価・学習・実装範囲を照合。
+  設計書の関連箇所39-59、181-223、227-280を中心に、全件分母・4文節/8枠・
+  128コードポイント・1昇格・隣接表記の正解漏洩禁止・量子化後評価を照合。
+  lib/context.mjs全94行、capture.mjsの採取・消費判定、ネイティブモデルと
+  server.patchの特徴・採点群に関わる箇所も補助的に確認。
+  ネイティブ全体、TSF、パッケージ、文脈抽出の完全な担当レビューには算入しない。
+
+判断の点検と未検証
+  - 独立に現行コードを読み、疑いを分類してから既存review-model-ranking.mdと
+    review-2026-11-16-full.mdを参照した。修正済み指摘を重複計上していない。
+  - 共通scoringGroupsが学習・推論・oracleに使われるだけでは正しさの証明に
+    ならない。今回の部分消費矛盾を、その共有による同時誤分類として扱った。
+  - 複数の許容文節列は評価では全文にして相関を維持する。oracleはREADME通り
+    指標別の最良値であり、集計の全値を同一昇格が同時に達成するとは主張しない。
+  - JS conversionはnative server.patch:277-278と異なり複数文節消費・
+    部分消費を明示除外しない。合成入力では差があるが通常capture経路での
+    発生は未確認。追加P2には数えない。
+    固定版commands.proto:677-678ではenable_multi_segment_candidateの既定値は
+    false。symbol/calculator/unicode等の複数文節経路とConverterの統合経路も
+    このflagで分岐する。converter_mainのs要求はcreate_partial_candidates=false。
+    captureは既定Requestを使い、このflagを有効にしない。
+  - 少数合成例への学習成功は独立文書での性能改善ではない。否定・引用・話題
+    転換、近似重複のない評価、量子化前後の一般精度、実機遅延・常駐量は未検証。
+  - 永続テストにCLI境界と上のP3の回帰はない。今回の追加プローブがそれらの
+    現状を記録する。製品の既存テストには追加していない。
+
+複数文節消費の一次参照
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/protocol/commands.proto#L677
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/rewriter/symbol_rewriter.cc#L361
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/rewriter/calculator_rewriter.cc#L118
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/converter/converter.cc#L724
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/converter/converter_main.cc

@@ -1,0 +1,12 @@
+**********************************************************************
+** Visual Studio 2022 Developer PowerShell v17.14.45
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+cl : コマンド ライン warning D9025 : '/std:c++17' より '/std:c++20' が優先されます。
+client.cc
+cl : コマンド ライン warning D9025 : '/std:c++17' より '/std:c++20' が優先されます。
+engine_converter.cc
+cl : コマンド ライン warning D9025 : '/std:c++17' より '/std:c++20' が優先されます。
+catj_reranker.cc
+{"lost_session":false,"displayed":"箸","committed":"箸","test_returned_preedit":true,"sessions_created":1,"space_snapshots":[true],"mismatch":false}
+{"lost_session":true,"displayed":"箸","committed":"橋","test_returned_preedit":true,"sessions_created":2,"space_snapshots":[true,false],"mismatch":true}

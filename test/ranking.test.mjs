@@ -122,6 +122,46 @@ test('rejects duplicate candidate IDs within a segment', () => {
   assert.throws(() => validateSample(conversion(segmentWithDuplicate)), TypeError);
 });
 
+test('rejects full consumption when a candidate has the partial-consumption attribute', () => {
+  for (const mode of ['conversion', 'prediction']) {
+    const sample = {
+      mode, context: '解凍', targets: [['解凍']],
+      segments: [segment([
+        candidate(0, '回答', { consumption: 'full' }),
+        candidate(1, '解凍', { consumption: 'full', attributes: ['PARTIALLY_KEY_CONSUMED'] }),
+      ])],
+    };
+    const invalidConsumption = { name: 'TypeError', message: /consumption/i };
+    assert.throws(() => validateSample(sample), invalidConsumption);
+    assert.throws(() => rankCase(sample, { score: ({ candidate }) => candidate.id }), invalidConsumption);
+    assert.throws(() => trainModel([sample], { dictionarySha256: 'a'.repeat(64), epochs: 1 }), invalidConsumption);
+    assert.throws(() => evaluateCases([sample]), invalidConsumption);
+  }
+});
+
+test('partial-consumption attributes preserve partial, unknown, and omitted consumption labels', () => {
+  for (const consumption of ['partial', 'unknown', undefined]) {
+    const sample = {
+      ...prediction([
+        candidate(0, '回答', { consumption: 'full' }),
+        candidate(1, '解凍', {
+          attributes: ['PARTIALLY_KEY_CONSUMED'],
+          ...(consumption === undefined ? {} : { consumption }),
+        }),
+      ]),
+      targets: [['解凍']], context: '解凍',
+    };
+    assert.doesNotThrow(() => validateSample(sample));
+    assert.doesNotThrow(() => validateSample({ ...sample, mode: 'conversion' }));
+    assert.equal(rankCase(sample, { score: ({ candidate }) => candidate.id }).promotion, null);
+    const result = evaluateCases([sample]).prediction;
+    assert.equal(result.displayedTargetReachable, 1);
+    assert.equal(result.allCandidateReachable, 0);
+    assert.equal(result.currentLine.promoted, 0);
+    assert.throws(() => trainModel([sample], { dictionarySha256: 'a'.repeat(64), epochs: 1 }), /positive/i);
+  }
+});
+
 test('protection attributes override omitted and explicitly normal kinds in both modes', () => {
   for (const attribute of [
     'USER_DICTIONARY', 'NO_MODIFICATION', 'COMMAND_CANDIDATE',

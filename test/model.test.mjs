@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { extractContext } from '../lib/context.mjs';
+import { evaluateCases } from '../lib/evaluate.mjs';
 import { loadModel, trainModel } from '../lib/model.mjs';
 
 const dictionarySha256 = 'a'.repeat(64);
@@ -64,6 +65,34 @@ test('treats all accepted candidates as positive probability mass', () => {
   const sample = { ...example(null, '回答'), targets: [['回答'], ['解凍']] };
   const trained = trainModel([sample], { dictionarySha256, epochs: 1 });
   assert.equal(trained.training.firstEpochLoss, 0);
+});
+
+for (const mode of ['conversion', 'prediction']) {
+  for (const field of ['targets', 'acceptedTexts']) {
+    test(`${mode} training and evaluation reject an explicit null ${field}`, () => {
+      const sample = { ...example(null, '解凍', mode), acceptedTexts: ['解凍'], [field]: null };
+      assert.throws(() => evaluateCases([sample]), TypeError);
+      assert.throws(() => trainModel([sample, example(null, '回答', mode)],
+        { dictionarySha256, epochs: 1 }), TypeError);
+    });
+  }
+}
+
+test('omitted label arrays retain their training and evaluation behavior', () => {
+  const conversion = example(null, '解凍');
+  const prediction = { ...example(null, '解凍', 'prediction'), acceptedTexts: ['解凍'] };
+  delete prediction.targets;
+  for (const sample of [conversion, prediction]) {
+    const trained = trainModel([sample], { dictionarySha256, epochs: 1 });
+    assert.deepEqual(trained.trainedModes, [sample.mode]);
+    assert.equal(evaluateCases([sample])[sample.mode].cases, 1);
+  }
+
+  const unlabeled = { ...conversion };
+  delete unlabeled.targets;
+  const trained = trainModel([unlabeled, conversion], { dictionarySha256, epochs: 1 });
+  assert.equal(trained.training.groups, 1);
+  assert.throws(() => evaluateCases([unlabeled]), /accepted text or aligned target/);
 });
 
 test('model load rejects dictionary mismatches and corrupt quantized payloads', () => {

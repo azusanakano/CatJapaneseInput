@@ -1,0 +1,20 @@
+default-input-test.cc
+PASS installation enables CatJapaneseInput as the default input
+PASS the current user's Japanese CatJapaneseInput profile is selected
+PASS other input methods and the default-user template are retained
+PASS successful preference setup has no failure message
+PASS service installations do not alter user input settings
+PASS a service host configures the impersonated installing user's default
+PASS an impersonated service account does not change user input settings
+PASS failed thread-token lookup does not fall back to a different identity
+FAIL a non-system service in session zero does not change user input settings
+FAIL unknown effective token session does not change user input settings
+PASS failed account detection does not alter user input settings
+PASS an OS preference failure preserves the successful file installation
+PASS preference failure logs an informational message with manual setup instructions
+PASS all opened identity tokens are closed
+PASS fresh install configures the default
+PASS major upgrade configures the default
+PASS repair preserves a later user selection
+PASS uninstall does not enable the removed profile
+PASS old-product removal during upgrade does not enable the removed profile

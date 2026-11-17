@@ -1,0 +1,12 @@
+default-input-test.cc
+FAIL installation enables CatJapaneseInput as the default input
+PASS the current user's Japanese CatJapaneseInput profile is selected
+PASS other input methods and the default-user template are retained
+PASS service installations do not alter user input settings
+FAIL failed account detection does not alter user input settings
+PASS an OS preference failure preserves the successful file installation
+PASS fresh install configures the default
+FAIL major upgrade configures the default
+FAIL repair preserves a later user selection
+PASS uninstall does not enable the removed profile
+PASS old-product removal during upgrade does not enable the removed profile

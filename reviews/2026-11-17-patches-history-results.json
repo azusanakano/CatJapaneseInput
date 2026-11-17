@@ -1,0 +1,35 @@
+[
+  {
+    "fixture": "absent",
+    "executable": "C:/Users/user/AppData/Local/Temp/catj-english-verify-acad4c075db146dd9bf5dd590c35d35f/session_handler_main.exe",
+    "executableSha256": "a71596d9760bc559651bd85344f02effe3271e5260ae04730ca1dde02b7f8e00",
+    "input": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-history-absent.tsv",
+    "profile": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-runtime-02f09eea-ca09-4d66-823a-8bdf851becf6\\profile",
+    "status": 0,
+    "signal": null,
+    "stdout": "[ PASSED ] C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-history-absent.tsv\r\n",
+    "stderr": ""
+  },
+  {
+    "fixture": "empty",
+    "executable": "C:/Users/user/AppData/Local/Temp/catj-english-verify-acad4c075db146dd9bf5dd590c35d35f/session_handler_main.exe",
+    "executableSha256": "a71596d9760bc559651bd85344f02effe3271e5260ae04730ca1dde02b7f8e00",
+    "input": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-history-empty.tsv",
+    "profile": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-runtime-00bc3603-ebb4-43d8-bc4c-53ee6527ffd0\\profile",
+    "status": 0,
+    "signal": null,
+    "stdout": "[ PASSED ] C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-history-empty.tsv\r\n",
+    "stderr": ""
+  },
+  {
+    "fixture": "new-revision",
+    "executable": "C:/Users/user/AppData/Local/Temp/catj-english-verify-acad4c075db146dd9bf5dd590c35d35f/session_handler_main.exe",
+    "executableSha256": "a71596d9760bc559651bd85344f02effe3271e5260ae04730ca1dde02b7f8e00",
+    "input": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-history-new-revision.tsv",
+    "profile": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-runtime-8c21619e-29cb-4f7a-8e04-6f7b2606d9c4\\profile",
+    "status": 0,
+    "signal": null,
+    "stdout": "[ PASSED ] C:\\Users\\user\\Desktop\\CatJapaneseInput\\reviews\\2026-11-17-patches-history-new-revision.tsv\r\n",
+    "stderr": ""
+  }
+]

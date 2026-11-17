@@ -1,0 +1,449 @@
+{
+  "date": "2026-11-17",
+  "timezone": "Asia/Tokyo",
+  "head": "6e359013106f94bc056c8c39294618d9334835e0",
+  "snapshot": "original review scope; later default-input feature reviewed separately",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 14362,
+      "physicalLines": 148,
+      "sha256": "e7dba111581224215f17789a6821977c5f5bfe1b9ecf58f66128156246c32721",
+      "method": "line-by-line"
+    },
+    {
+      "path": "dist/.gitignore",
+      "bytes": 369,
+      "physicalLines": 9,
+      "sha256": "39a2d96063be2e65e33b359068cdf815e266753445d36f62ba486c83c9c8a18f",
+      "method": "line-by-line"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/CatJapaneseInput-0.1.0-Windows-x64-unsigned.zip",
+      "bytes": 77246739,
+      "physicalLines": null,
+      "sha256": "b26efc43c06d7ab2379a877383ab45461360b24fe700e7e393202f3452d845e0",
+      "method": "archive checksum verification"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/CatJapaneseInput-0.1.0-Windows-x64-unsigned.zip.sha256",
+      "bytes": 114,
+      "physicalLines": 1,
+      "sha256": "1185669ba2e54aae4a25ba46d4388ef8b265e9328c460b241f9272f35bae6852",
+      "method": "line-by-line"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/package-release.ps1",
+      "bytes": 6045,
+      "physicalLines": 127,
+      "sha256": "177530a0496e893563de385daeca5bf999627134b762cd42c8d0a50caddefe7a",
+      "method": "line-by-line"
+    },
+    {
+      "path": "dist/CatJapaneseInput-0.1.0/署名と公開-ja.txt",
+      "bytes": 3027,
+      "physicalLines": 52,
+      "sha256": "06f82a5e32b1383a99452252ebe5cf873c02bd0ef4d5bcbf677ba70a4fa804ae",
+      "method": "line-by-line"
+    },
+    {
+      "path": "lib/candidate.mjs",
+      "bytes": 421,
+      "physicalLines": 10,
+      "sha256": "63a828ac0bbe3a498a6a73a1dfecf59d17d422e39920eeeff6ca27ab12efb17f",
+      "method": "line-by-line"
+    },
+    {
+      "path": "lib/context.mjs",
+      "bytes": 3883,
+      "physicalLines": 94,
+      "sha256": "a6ecadf3fee27452d7fb817b2c81c8b73750955428edbb766a7fe6cb6ddca7cf",
+      "method": "line-by-line"
+    },
+    {
+      "path": "lib/edit-protocol.mjs",
+      "bytes": 7943,
+      "physicalLines": 224,
+      "sha256": "6efc321ebefacfeb8d497066df7b1504a4160a2f26f94f69e32ead5cddf3316c",
+      "method": "line-by-line"
+    },
+    {
+      "path": "lib/evaluate.mjs",
+      "bytes": 8138,
+      "physicalLines": 178,
+      "sha256": "931fc12df5683e4e1f36a8bb88001cfb32d40ec4a4349a6ab34a8556dde5baea",
+      "method": "line-by-line"
+    },
+    {
+      "path": "lib/model.mjs",
+      "bytes": 13201,
+      "physicalLines": 289,
+      "sha256": "7adde83b2815a407d26cb30fcea6f50eb147013f9621c5f15836e83e005bd204",
+      "method": "line-by-line"
+    },
+    {
+      "path": "lib/ranking.mjs",
+      "bytes": 6136,
+      "physicalLines": 149,
+      "sha256": "b36611dcdcf405eccc8a99f608913c5b389c0a23e1dcbfbc0212c2a7fb2f729f",
+      "method": "line-by-line"
+    },
+    {
+      "path": "local-japanese-ime-design.md",
+      "bytes": 62060,
+      "physicalLines": 338,
+      "sha256": "c01840010c00ad0b2eedb43844ddbe175516a6e395eb6fe7a5777f6aacc08170",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/BUILD.bazel",
+      "bytes": 1583,
+      "physicalLines": 59,
+      "sha256": "625453ca28a6eae30b45c5a0acb641911939eed2911c469b4cc891964ab635d6",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_context.cc",
+      "bytes": 6306,
+      "physicalLines": 175,
+      "sha256": "85928ccdf344678a22d9d086ce658414fbfa7ce839eccd04619cb7c7be0d260e",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_context.h",
+      "bytes": 831,
+      "physicalLines": 35,
+      "sha256": "a4aeae4abd6d606c2157b6726b3064c7c636e87690f4058d605af4a153721551",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_context_model.cc",
+      "bytes": 13390,
+      "physicalLines": 343,
+      "sha256": "1940d0b6ed1783cd3d2261b423d3e28bff6e59419e7f592124625c29aed70fb7",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_context_model.h",
+      "bytes": 2321,
+      "physicalLines": 75,
+      "sha256": "85379bd0de1934ebb2e5cf9d071cd58c8c243399148b957dff850ed42f0a01de",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_context_model_test.cc",
+      "bytes": 3713,
+      "physicalLines": 104,
+      "sha256": "3fdbbcac61d6a8caaaf9711698fe690b25a12b5aa00952ebe99a460a12755903",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_context_test.cc",
+      "bytes": 3193,
+      "physicalLines": 84,
+      "sha256": "4899b73a0a5ded920eb1f375731fc6d56c9ab0f06e09ce77980001447a60fdf8",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_packaged_model.cc",
+      "bytes": 1560,
+      "physicalLines": 57,
+      "sha256": "cd969c7e08f39f270f61987f76ccb997f5f4a3dbb2a1a42f5bf2c564a6677abc",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/catj_packaged_model.h",
+      "bytes": 430,
+      "physicalLines": 17,
+      "sha256": "2c0ab4d1aed184985ea48202e926c3a0b68c8e0e2527149f06ee117714cf196d",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/english-dictionary.tsv",
+      "bytes": 10905,
+      "physicalLines": 257,
+      "sha256": "f32247a47b6a78d794bd00fd6430d8a50e051d98b21b946c1798dcf0af78b14e",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/manga-dictionary.tsv",
+      "bytes": 876,
+      "physicalLines": 18,
+      "sha256": "315087da4a748f313edd8ea9f48422c878f74a0ac84c3d461bddab0e47a43eec",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/smoke-training-input.jsonl",
+      "bytes": 1043,
+      "physicalLines": 6,
+      "sha256": "0c26bf314e16daff02fd312b322daed9c4d1feed656421470f5ca702a0f154dd",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/LICENSE.md",
+      "bytes": 5125,
+      "physicalLines": 93,
+      "sha256": "3b510150d34f248a221bb88e1d811238d6c6c18b51231822c42974c39bb07256",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/utf8proc.c",
+      "bytes": 33114,
+      "physicalLines": 838,
+      "sha256": "edf80118fd34796bcabef4567cc684adebc7058f2afe8cfdc11b7a78e383ed84",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/utf8proc.h",
+      "bytes": 34049,
+      "physicalLines": 800,
+      "sha256": "a4e498b7392c383cf3b22e662da21e0b48f1264806235d87b5d8bd166232f658",
+      "method": "line-by-line"
+    },
+    {
+      "path": "native/mozc/third_party/utf8proc/utf8proc_data.c",
+      "bytes": 2360214,
+      "physicalLines": 17141,
+      "sha256": "950e549dbfc853c4304425f3af1875e72fa9fc9697c273c763400c2da4e380a7",
+      "method": "full-byte upstream comparison and Unicode conformance"
+    },
+    {
+      "path": "reviews/reproduce-native-path.mjs",
+      "bytes": 1926,
+      "physicalLines": 44,
+      "sha256": "fff3ecdafa537b34f4367bddf3f983fc3039c9e3438b486f85a61e974a3d0eb8",
+      "method": "line-by-line historical reproducer"
+    },
+    {
+      "path": "reviews/reproduce-review-findings.mjs",
+      "bytes": 2588,
+      "physicalLines": 72,
+      "sha256": "ccfcb6a45fc01b00ff470d75bde131ad0c046e5af23fe44fadf7be33b736e062",
+      "method": "line-by-line historical reproducer"
+    },
+    {
+      "path": "reviews/review-2026-11-15.md",
+      "bytes": 18684,
+      "physicalLines": 156,
+      "sha256": "b12ea5352a3e68e89c4a6c38a937c274e58c6548d3bc61622e2507859680c587",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/review-2026-11-16-full-files.json",
+      "bytes": 17879,
+      "physicalLines": 510,
+      "sha256": "2d5328347311edcd3b8e15a2824d48bab95a8a853aeb0875d3397806091afdef",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/review-2026-11-16-full.md",
+      "bytes": 19579,
+      "physicalLines": 156,
+      "sha256": "eeaaad4a00b738eaa2108b3a15eea562104429789ccce961686ce150ff46d7b8",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/review-2026-11-16.md",
+      "bytes": 3157,
+      "physicalLines": 15,
+      "sha256": "517f82787a8063eaa1d6be2ade6a81cf3bc681f6ce0b9fb14b3f946227a29f5f",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/review-model-ranking.md",
+      "bytes": 7603,
+      "physicalLines": 45,
+      "sha256": "e81cf9907cf01bf60e8cf4fccfcdd3edd6fd69b99b00a0cf34c16ab9d851dd87",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/review-native-mozc.md",
+      "bytes": 14165,
+      "physicalLines": 108,
+      "sha256": "65815378e7f533d416eecdae66cc0328fcdaa5077aa1a3cff28915634f7c426b",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/review-protocol-context.md",
+      "bytes": 12276,
+      "physicalLines": 123,
+      "sha256": "9e969fc12b221f6e1419555383ccc7c39ff370922fc256950a39516bcc95f025",
+      "method": "historical reference"
+    },
+    {
+      "path": "reviews/reviewed-files.json",
+      "bytes": 3061,
+      "physicalLines": 103,
+      "sha256": "3cf05da4f1260aea712cde5d4b7ddac14d7dc050ab4b706a51a5b99d3282e4a1",
+      "method": "historical reference"
+    },
+    {
+      "path": "test/context.test.mjs",
+      "bytes": 3838,
+      "physicalLines": 80,
+      "sha256": "5e9a7dbf81d0ba4e8eaff52417deef990c7dea9fc5d5eab7c236b6fe63482469",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/edit-protocol.test.mjs",
+      "bytes": 9201,
+      "physicalLines": 232,
+      "sha256": "eeb7b1792dda5a40c0d431f808b6dcc360ecd57056e4165031861b83272b8fe1",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/evaluate.test.mjs",
+      "bytes": 5716,
+      "physicalLines": 147,
+      "sha256": "4a530bbb275029b603759438a744715ac3104b8fb138813e135a0ef5caf608a2",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/fixtures/candidates.jsonl",
+      "bytes": 909,
+      "physicalLines": 3,
+      "sha256": "d777d98e2cf791c321a84b4cf2367965e7163ab3be72b095922ef4f03f139d2f",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/fixtures/mozc-context-smoke.tsv",
+      "bytes": 1698,
+      "physicalLines": 45,
+      "sha256": "8ba537d57413f18d008d4e7d90fbe75db0e11b439d63fd767fc30d4717601e24",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/fixtures/mozc-english-conversion.tsv",
+      "bytes": 1491,
+      "physicalLines": 67,
+      "sha256": "5e0f484795629586e6093c4d677e105dd663fb935a6047da651e30ed64cb70ad",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/fixtures/mozc-manga-conversion.tsv",
+      "bytes": 1847,
+      "physicalLines": 78,
+      "sha256": "bd1952d6d704b2a4b3fb152c1b7c37a1253bdf9005f39c43fd7210b694d0dd15",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/model.test.mjs",
+      "bytes": 3920,
+      "physicalLines": 86,
+      "sha256": "3210c5285fec805bb47fa2d52a82c6baf7ab97ba433eb7420cf6f2978c0f3c10",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/package-release.test.ps1",
+      "bytes": 8693,
+      "physicalLines": 178,
+      "sha256": "b239ee135e9cc4155422be1749df6b99396515018bbd7a9e315839012e56d57c",
+      "method": "line-by-line"
+    },
+    {
+      "path": "test/ranking.test.mjs",
+      "bytes": 9383,
+      "physicalLines": 210,
+      "sha256": "6e789deb703461ed6b659e672d9a6eed5f6b42b81515dd178c582233b74101ad",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/evaluate.mjs",
+      "bytes": 3336,
+      "physicalLines": 94,
+      "sha256": "be6dd32b4c235aded33add1a208cd53bb8ba906a4ced5640b354913c7bc8198a",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/capture.mjs",
+      "bytes": 9929,
+      "physicalLines": 260,
+      "sha256": "0f31da81fde218c69aa5f8ef37933ca45929e7c01a263a9cf76e6cdf357bee59",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/capture.test.mjs",
+      "bytes": 7480,
+      "physicalLines": 170,
+      "sha256": "c5c5ab2580d27b6f5e872aec39ad61e9ab9fa3279ea64f1178b5f90b19a0b7ab",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/catj-brand.patch",
+      "bytes": 32474,
+      "physicalLines": 677,
+      "sha256": "2bf56cfc561c41c356b6f8a73ff6b0d769ec962e0397e51846331e457b5e6631",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/catj-context-licenses.patch",
+      "bytes": 5515,
+      "physicalLines": 105,
+      "sha256": "02d01c45d20e5fa0f4522f4f7d22fde4fbb9c67ffe1a38f655fdd3c8f98bf011",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/catj-context-package.patch",
+      "bytes": 292,
+      "physicalLines": 12,
+      "sha256": "dc93a8972e0deb3efb445a67ea822d5ee788cf5019ff512158660640550783a5",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/catj-context-server.patch",
+      "bytes": 27267,
+      "physicalLines": 759,
+      "sha256": "08719341b5c2a876544068f18901f842cae99f51ab7066cfc28fd411e18bb6e4",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/catj-context-tsf.patch",
+      "bytes": 27936,
+      "physicalLines": 710,
+      "sha256": "92ccaa4edd73b0dbdf06d22bef031b1cfc81f4820a9f7d8bf6eeb8855b7da351",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/catj-english-dictionary.patch",
+      "bytes": 1859,
+      "physicalLines": 38,
+      "sha256": "f693b37ec61510a83420e4e5898aacfd6e5b0f258eacd8a36c76cb73a379ee68",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/export-model.mjs",
+      "bytes": 1766,
+      "physicalLines": 42,
+      "sha256": "3e1cdb9fa4db047e04fe5d0106db8616623886932e188dad1ac80b4c422844cc",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/export-model.test.mjs",
+      "bytes": 3370,
+      "physicalLines": 63,
+      "sha256": "c65451aba0fbcac0f29ac038c86527912621739c815f12444647d4a648371858",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/mozc/stage-context-ime.ps1",
+      "bytes": 3161,
+      "physicalLines": 71,
+      "sha256": "5fedec9d6554b6d3ae05e5c5b992347c773f2077b140e28496008476fcd0c797",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/samples.mjs",
+      "bytes": 568,
+      "physicalLines": 17,
+      "sha256": "0b8e19844e625e446ae332fc3c092b19af504c9500c05e74baa99afcf8d4b433",
+      "method": "line-by-line"
+    },
+    {
+      "path": "tools/train.mjs",
+      "bytes": 1864,
+      "physicalLines": 48,
+      "sha256": "f2d04c3b8a07e95c7a381f214b3184f209b638d359a3980d3aafde8ac95ab3e5",
+      "method": "line-by-line"
+    }
+  ]
+}

@@ -1,0 +1,253 @@
+{
+  "date": "2026-11-17",
+  "baseline": "6e359013106f94bc056c8c39294618d9334835e0",
+  "pinnedMozc": "a4541df29db443b49f81cf54665873b68fde9efa",
+  "reviewer": "review_patches",
+  "productEdits": false,
+  "externalCheckoutMutations": false,
+  "files": [
+    {
+      "path": "tools/mozc/catj-brand.patch",
+      "physicalLines": 677,
+      "reviewedRanges": [
+        [
+          1,
+          677
+        ]
+      ],
+      "checks": "全追加・削除・コンテキスト行。TSF GUID/profile、MSI、IPC、製品名・保存先・ビルド名の横断整合。基準HEAD後の既定IME機能変更は別担当。",
+      "baselineSha256": "2bf56cfc561c41c356b6f8a73ff6b0d769ec962e0397e51846331e457b5e6631"
+    },
+    {
+      "path": "tools/mozc/catj-context-licenses.patch",
+      "physicalLines": 105,
+      "reviewedRanges": [
+        [
+          1,
+          105
+        ]
+      ],
+      "checks": "全行。utf8proc/UnicodeライセンスとHTML表示・同梱の整合。",
+      "baselineSha256": "02d01c45d20e5fa0f4522f4f7d22fde4fbb9c67ffe1a38f655fdd3c8f98bf011"
+    },
+    {
+      "path": "tools/mozc/catj-context-package.patch",
+      "physicalLines": 12,
+      "reviewedRanges": [
+        [
+          1,
+          12
+        ]
+      ],
+      "checks": "全行。単一パッケージ対象、配布対象名の整合。",
+      "baselineSha256": "dc93a8972e0deb3efb445a67ea822d5ee788cf5019ff512158660640550783a5"
+    },
+    {
+      "path": "tools/mozc/catj-context-server.patch",
+      "physicalLines": 759,
+      "reviewedRanges": [
+        [
+          1,
+          759
+        ]
+      ],
+      "checks": "全行。Client履歴・IPCログ、DataManager寿命、Engineモデル所有、候補制約、時間制限、選択・復旧経路。",
+      "baselineSha256": "08719341b5c2a876544068f18901f842cae99f51ab7066cfc28fd411e18bb6e4"
+    },
+    {
+      "path": "tools/mozc/catj-context-tsf.patch",
+      "physicalLines": 710,
+      "reviewedRanges": [
+        [
+          1,
+          710
+        ]
+      ],
+      "checks": "全行。通常欄判定、Win32保護属性、InputScope、COM identity、composition所有、キー・編集セッション、取得範囲、UTF-16転送。",
+      "baselineSha256": "92ccaa4edd73b0dbdf06d22bef031b1cfc81f4820a9f7d8bf6eeb8855b7da351"
+    },
+    {
+      "path": "tools/mozc/catj-english-dictionary.patch",
+      "physicalLines": 38,
+      "reviewedRanges": [
+        [
+          1,
+          38
+        ]
+      ],
+      "checks": "全行。BUILD入力、文字正規化とCATJ_LITERAL_READINGの限定適用。",
+      "baselineSha256": "f693b37ec61510a83420e4e5898aacfd6e5b0f258eacd8a36c76cb73a379ee68"
+    },
+    {
+      "path": "tools/mozc/stage-context-ime.ps1",
+      "physicalLines": 71,
+      "reviewedRanges": [
+        [
+          1,
+          71
+        ]
+      ],
+      "checks": "全行。固定版・パッチ検査、辞書変形、モデル検査、コピー、シェル互換性。",
+      "baselineSha256": "5fedec9d6554b6d3ae05e5c5b992347c773f2077b140e28496008476fcd0c797"
+    },
+    {
+      "path": "native/mozc/english-dictionary.tsv",
+      "physicalLines": 257,
+      "reviewedRanges": [
+        [
+          1,
+          257
+        ]
+      ],
+      "checks": "全行。5列、読み・品詞ID・コスト・英字表記、3文字種展開。",
+      "baselineSha256": "f32247a47b6a78d794bd00fd6430d8a50e051d98b21b946c1798dcf0af78b14e"
+    },
+    {
+      "path": "native/mozc/manga-dictionary.tsv",
+      "physicalLines": 18,
+      "reviewedRanges": [
+        [
+          1,
+          18
+        ]
+      ],
+      "checks": "全行。5列、読み・表記・品詞、3文字種展開。",
+      "baselineSha256": "315087da4a748f313edd8ea9f48422c878f74a0ac84c3d461bddab0e47a43eec"
+    },
+    {
+      "path": "test/fixtures/mozc-context-smoke.tsv",
+      "physicalLines": 45,
+      "reviewedRanges": [
+        [
+          1,
+          45
+        ]
+      ],
+      "checks": "全行。文脈あり/なし、候補選択、確定、NO_HISTORYの試験範囲。",
+      "baselineSha256": "8ba537d57413f18d008d4e7d90fbe75db0e11b439d63fd767fc30d4717601e24"
+    },
+    {
+      "path": "test/fixtures/mozc-english-conversion.tsv",
+      "physicalLines": 67,
+      "reviewedRanges": [
+        [
+          1,
+          67
+        ]
+      ],
+      "checks": "全行。ひらがな・全角/半角カナの入力、期待候補・確定。",
+      "baselineSha256": "5e0f484795629586e6093c4d677e105dd663fb935a6047da651e30ed64cb70ad"
+    },
+    {
+      "path": "test/fixtures/mozc-manga-conversion.tsv",
+      "physicalLines": 78,
+      "reviewedRanges": [
+        [
+          1,
+          78
+        ]
+      ],
+      "checks": "全行。技名と文字種別の入力、期待候補・確定。",
+      "baselineSha256": "bd1952d6d704b2a4b3fb152c1b7c37a1253bdf9005f39c43fd7210b694d0dd15"
+    }
+  ],
+  "physicalLinesReviewed": 2837,
+  "relatedReading": [
+    "基準HEADのREADME全文",
+    "local-japanese-ime-design.mdの文脈・機密欄・候補制約・復旧/編集プロトコルの関連箇所",
+    "固定版Mozcのパッチ対象45ファイルおよびClient/SessionHandler/TSF/Engine等の呼出し元・先"
+  ],
+  "validation": [
+    {
+      "check": "6パッチの適用前照合",
+      "result": "97/97 hunks exact",
+      "evidence": "reviews/2026-11-17-patches-apply-check.json",
+      "scope": "公式固定版45ファイルに対するold/context全行・行数比較とメモリ内適用。外部checkoutへのgit applyは行っていない。"
+    },
+    {
+      "check": "snapshot消去と履歴再生による候補違い確定",
+      "result": "現ソース再コンパイル版で対照箸→箸、失効注入箸→橋を再現",
+      "evidence": "reviews/2026-11-17-patches-replay/source-provenance.json",
+      "scope": "Client/engine_converter/catj_rerankerを公式固定版＋基準パッチからMSVCで再ビルド。リンクmapで新規obj使用確認。その他ライブラリ・生成protobufは既存ビルドをread-only再利用。IPC接続はプロセス内adapter。"
+    },
+    {
+      "check": "短期履歴の無効化",
+      "result": "preceding_text欠落+revision固定は東京→とで都、明示空文字またはrevision変更はと",
+      "evidence": "reviews/2026-11-17-patches-history-results.json",
+      "scope": "既存の実session_handler_mainと実辞書。TSF欄内の実カーソル移動は静的呼出し追跡。"
+    },
+    {
+      "check": "Windows PowerShell 5.1",
+      "result": "expected reverse-check failureでNativeCommandErrorによりLASTEXITCODE判定へ進まず。StrConvもTypeNotFound",
+      "evidence": "reviews/2026-11-17-patches-stage-results.json",
+      "scope": "5.1.26100.9818を明示起動。隔離した最小Git fixtureでstageの該当コマンドを実行。全stagingは実行しない。"
+    },
+    {
+      "check": "辞書構造・展開",
+      "result": "275入力行×3文字種=825行。5列・既知品詞ID・ordinal exact重複0。",
+      "scope": "PowerShellのculture依存Group-Objectの8件は同一文字列重複ではないため棄却。StringComparer.Ordinalで検査。"
+    },
+    {
+      "check": "モデル所有・データ寿命・DLL loader lock",
+      "result": "Engineサーバー側でInit。共有モデルとデータの寿命一致、Clone保持を追跡。",
+      "scope": "静的。LoadPackagedModelの実BCrypt検証はnative担当のレビュー証跡を参照。"
+    }
+  ],
+  "findings": [
+    {
+      "id": "P-01",
+      "priority": "P2",
+      "status": "new",
+      "file": "tools/mozc/catj-context-server.patch",
+      "lines": [
+        30,
+        35
+      ],
+      "summary": "表示後のセッション失効でsnapshotなし履歴再生が異なる候補を確定する"
+    },
+    {
+      "id": "P-02",
+      "priority": "P2",
+      "status": "reconfirmed-unfixed",
+      "file": "tools/mozc/catj-context-tsf.patch",
+      "lines": [
+        101,
+        104
+      ],
+      "summary": "preceding_text削除とfocus revision固定により同一欄の位置変更後も短期履歴を残す"
+    },
+    {
+      "id": "P-03",
+      "priority": "P2",
+      "status": "reconfirmed-unfixed",
+      "file": "tools/mozc/stage-context-ime.ps1",
+      "lines": [
+        23,
+        24
+      ],
+      "relatedLines": [
+        [
+          43,
+          44
+        ]
+      ],
+      "summary": "Windows PowerShell 5.1でstageが停止する"
+    }
+  ],
+  "previousReviewComparison": {
+    "performedAfterIndependentReview": true,
+    "unresolvedReconfirmed": [
+      "reviews/review-2026-11-16-full.md:R01",
+      "reviews/review-2026-11-16-full.md:R02"
+    ],
+    "fixedFindingsExcluded": "2026-11-15等の既に修正済み項目を新しい問題として再報告しない。"
+  },
+  "limitations": [
+    "実TSF GUIでのサーバー停止・タイムアウト待機・Enter確定は未実施。プロセス内失効注入と固定版TSF静的追跡に基づく。",
+    "既存ビルド依存ライブラリ・生成protobufの全ソースを今回再ビルドしたわけではない。再生問題の3翻訳単位は新規ビルド・ソース一致・リンク先確認済み。",
+    "全MSI install/upgrade/uninstall/coexistence、現行OS全アプリのInputScope挙動、実機レイテンシは未検証。",
+    "READMEが未実装と明示する非同期文脈キャッシュ・予測期限・Prepare/Apply/Ack接続の不足そのものは欠陥として数えない。",
+    "割当全物理行の精査完了は全環境の無欠陥保証ではない。修正案は未実装。",
+    "ユーザー追加依頼の既定IME機能に伴う基準HEAD以後のbrand.patch/README変更は親と別レビュー担当の範囲。"
+  ]
+}

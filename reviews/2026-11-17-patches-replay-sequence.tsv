@@ -1,0 +1,11 @@
+SET_CONFIG	history_learning_level	NO_HISTORY
+SEND_KEY	on
+SEND_KEYS	hashi
+SEND_KEY_WITH_OPTION	space	context.input_field_type=NORMAL	context.catj_left_clipped=false	context.catj_preceding_utf16le="\025\131\337\230\156\060\137\060\201\060\001\060\270\173\222\060\242\143\127\060\137\060\002\060\015\000\012\000"
+EXPECT_PREEDIT	箸
+RESET_CONTEXT
+SEND_KEYS	hashi
+SEND_KEY	space
+EXPECT_PREEDIT	橋
+SEND_KEY	enter
+EXPECT_RESULT	橋

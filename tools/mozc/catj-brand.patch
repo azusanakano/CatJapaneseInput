@@ -1,6 +1,69 @@
 # CatJapaneseInput Windows development identity
 # Base commit: a4541df29db443b49f81cf54665873b68fde9efa
 
+diff --git a/src/win32/custom_action/custom_action.cc b/src/win32/custom_action/custom_action.cc
+--- a/src/win32/custom_action/custom_action.cc
++++ b/src/win32/custom_action/custom_action.cc
+@@ -308,29 +308,55 @@
+ UINT __stdcall EnableTipProfile(MSIHANDLE msi_handle) {
++  // The installing user's thread token takes precedence over the MSI host.
++  HANDLE token = nullptr;
++  if (!::OpenThreadToken(::GetCurrentThread(), TOKEN_QUERY, TRUE, &token)) {
++    if (::GetLastError() != ERROR_NO_TOKEN ||
++        !::OpenProcessToken(::GetCurrentProcess(), TOKEN_QUERY, &token)) {
++      return ERROR_SUCCESS;
++    }
++  }
+   bool is_service = false;
+-  if (::mozc::WinUtil::IsServiceAccount(&is_service) && is_service) {
+-    // Do nothing if this is a service account.
++  DWORD session_id = 0;
++  DWORD returned_size = 0;
++  const bool identity_known =
++      ::GetTokenInformation(token, TokenSessionId, &session_id,
++                            sizeof(session_id), &returned_size) &&
++      returned_size == sizeof(session_id) &&
++      ::mozc::WinUtil::IsServiceUser(token, &is_service);
++  ::CloseHandle(token);
++  if (!identity_known || is_service || session_id == 0) {
++    // Only configure a confirmed non-service user's input preferences.
+     return ERROR_SUCCESS;
+   }
+
+   wchar_t clsid[64] = {};
+   if (!::StringFromGUID2(::mozc::win32::TsfProfile::GetTextServiceGuid(), clsid,
+                          std::size(clsid))) {
+     // Do not care about errors.
+     return ERROR_SUCCESS;
+   }
+   wchar_t profile_id[64] = {};
+   if (!::StringFromGUID2(::mozc::win32::TsfProfile::GetProfileGuid(),
+                          profile_id, std::size(profile_id))) {
+     // Do not care about errors.
+     return ERROR_SUCCESS;
+   }
+
+   // 0x0411 == MAKELANGID(LANG_JAPANESE, SUBLANG_JAPANESE_JAPAN)
+   const auto desc = ::mozc::win32::StrCatW(L"0x0411:", clsid, profile_id);
+
+-  // Do not care about errors.
+-  ::InstallLayoutOrTip(desc.c_str(), 0);
++  // This commit action impersonates the installing user. Enable the profile
++  // and make it the default without disabling any other input methods.
++  if (!::InstallLayoutOrTip(desc.c_str(), ILOT_DEFPROFILE)) {
++    // Preference failures must not roll back an otherwise successful install.
++    PMSIHANDLE record = MsiCreateRecord(1);
++    if (record) {
++      MsiRecordSetString(record, 0,
++          L"CatJapaneseInput: could not set the default input method. "
++          L"Select CatJapaneseInput in Windows keyboard settings.");
++      MsiProcessMessage(msi_handle, INSTALLMESSAGE_INFO, record);
++    }
++  }
+   return ERROR_SUCCESS;
+ }
+
+ UINT __stdcall FixupConfigFilePermission(MSIHANDLE msi_handle) {
 diff --git a/src/base/const.h b/src/base/const.h
 index 30a5013..c0fea51 100644
 --- a/src/base/const.h
@@ -372,7 +435,18 @@ index d1d8794..44e4f73 100644
          are currenly running. So the ShutdownServer action
          needs to be callled before the InstallValidate action.
        -->
-@@ -241,15 +241,15 @@
+@@ -233,7 +233,9 @@
+       <Custom Action="EnsureAllApplicationPackagesPermisssions" Before="InitialInstallationCommit" Condition="(NOT (REMOVE=&quot;ALL&quot;))" />
+       <Custom Action="InitialInstallationCommit" Before="FixupConfigFilePermission" Condition="(NOT (REMOVE=&quot;ALL&quot;)) AND (NOT UPGRADING)" />
+       <Custom Action="FixupConfigFilePermission" Before="EnableTipProfile" Condition="NOT (REMOVE=&quot;ALL&quot;)" />
+-      <Custom Action="EnableTipProfile" Before="InstallFinalize" Condition="(NOT (REMOVE=&quot;ALL&quot;)) AND (NOT UPGRADING)" />
++      <!-- Set the installing user's default on new installs and major upgrades.
++           Repair must preserve a default the user selected after installation. -->
++      <Custom Action="EnableTipProfile" Before="InstallFinalize" Condition="(NOT (REMOVE=&quot;ALL&quot;)) AND (NOT Installed)" />
+       <!-- show reboot dialog to execute pending file opartions -->
+       <?if ($(var.VSConfigurationName) = "Release") ?>
+         <ScheduleReboot After="InstallFinalize" Condition="(REMOVE=&quot;ALL&quot;)" />
+@@ -241,15 +243,15 @@
      </InstallExecuteSequence>
  
      <StandardDirectory Id="ProgramFilesFolder">

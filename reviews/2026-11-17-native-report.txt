@@ -1,0 +1,115 @@
+CatJapaneseInput ネイティブ担当レビュー
+対象HEAD: 6e359013106f94bc056c8c39294618d9334835e0
+実施日: 2026-11-17 (Asia/Tokyo)
+
+結論: 担当範囲について、新規の修正必須不具合は確認しなかった。製品コードは変更していない。
+
+全行確認した範囲（コメント・空行を含む物理行）:
+  native/mozc/catj_context.cc                 1-175
+  native/mozc/catj_context.h                  1-35
+  native/mozc/catj_context_model.cc           1-343
+  native/mozc/catj_context_model.h            1-75
+  native/mozc/catj_context_test.cc            1-84
+  native/mozc/catj_context_model_test.cc      1-104
+  native/mozc/catj_packaged_model.cc          1-57
+  native/mozc/catj_packaged_model.h           1-17
+  native/mozc/BUILD.bazel                     1-59
+  独自ファイル計: 9ファイル949行
+
+第三者コードも全文を読んだ:
+  native/mozc/third_party/utf8proc/utf8proc.c  1-838
+  native/mozc/third_party/utf8proc/utf8proc.h  1-800
+  native/mozc/third_party/utf8proc/LICENSE.md  1-93
+  第三者実装・ヘッダー・ライセンス計: 3ファイル1,731行
+
+生成データ:
+  native/mozc/third_party/utf8proc/utf8proc_data.c 17,141行、2,360,214 bytes
+  公式v2.11.3の全バイトと一致し、公式Unicode試験を通過した。
+  数値一つ一つを人手でUnicode仕様から再導出したという意味の全行確認ではない。
+  全13担当ファイルは19,821行。手動読了2,680行、生成データ機械検証17,141行。
+
+補助参照:
+  lib/context.mjs と lib/model.mjs を全文参照し、文字処理・特徴順・数値・バイナリに対応させた。
+  tools/mozc/export-model.mjs/.test.mjs を全文参照。
+  READMEの現行試作範囲・モデル・Unicode・ネイティブ試験手順、設計書45-59行と193-223行を参照。
+  catj-context-server.patch のreranker特徴生成とEngineへのロード/所有箇所を追跡。
+  独立静的レビュー後に過去 reviews/review-2026-11-16-full.md と比較した。
+  過去レビューに記載のネイティブ正常という判断を前提にせず、ビルドとUnicode試験を今回再実行した。
+
+主要判断:
+  ・ExtractContextは偶数長確認後にUTF-16LEを読取り、最大1,024コード単位に制限。
+    サロゲート切断を除外し、破損の影響を該当行だけに留める。
+    CRLF/CR/LF/U+2028/U+2029、3行の位置、空行/未取得、読取切断/保持切断をJSと照合。
+  ・ConfirmedStartはGB9c/GB11/GB12-13の不足するlookbehind状態を合成prefixで確認する。
+    RetainSuffixは書記素境界を維持し、NFC前後の各128コードポイント上限を適用する。
+  ・ExtractedContextが所有する文字列のビューは同期採点中に生存する。rvalueからlines()は削除済み。
+  ・モデルの寸法、重み順、7尺度、88-byte固定ヘッダー、144-byte重み開始、1,072,752-byte総長はexportと一致。
+    ヘッダー長→magic/版/Unicode/辞書hash→mode/reserved→scale→重みを検査する。
+    不正入力の早期return前に範囲外のヘッダーを読まない。
+  ・未学習modeはScore=0。不正必須特徴はNaN、長過ぎる隣接特徴は欠落として扱う。
+    7文字列の正規化と10埋込み、21スカラーの順がJSと一致。
+    コスト基準はreranker側で最初の非保護候補を使用し、候補indexも元の絶対順位。
+  ・1特徴は最大128点、1-3gram最大381個。整数和の絶対値は最大381×127=48,387でint32範囲内。
+    各実重みのFloat32有限上限と4段の積、層幅を合わせてもdouble上限より十分小さい（保守的に約1e160未満）。
+    極端な有限コスト同士の減算が±Infinityとなってもtanhで±1へ飽和し、JSと一致する。
+  ・utf8proc_mapは明示長で呼び、NULを保持。malloc結果はfreeする所有ハンドルに入る。
+    UTF8PROC_STATICの伝播、C生成データのinclude、Bazelのライブラリ/テスト依存も確認。
+  ・LoadPackagedModelは実辞書のSHA-256を計算し、照合不一致/空辞書/BCrypt失敗ではnullptr。
+    BCryptHashの入力const_castはAPIが入力を変更しない契約と整合。SHA-256出力32byteと小文字hexも整合。
+    固定版Mozc LoadEmbeddedFileはuint64_t配列+長さをabsl::string_viewで返し、現在の変換と所有範囲に一致。
+    Engineはデータセット更新時に再ロードし、既存EngineConverterは共有された一致モデルを保持する。
+    モデル自身に可変キャッシュはなく、スコア呼出しの作業領域はローカル。
+    DLL初期化/サーバー起動の最終呼出し経路の確認はパッチ担当と相互照合した。
+
+今回の実検証:
+  1. MSVC Build Tools 2022、x64、C++20、UTF-8、/O2 /W4で現行のcontext/model/utf8procを単体コンパイル。
+     既存catj_context_testは終了コード0。
+     catj_context_model_testから生成したcontext_model_probe.exeを親担当へ渡し、既存Nodeとの相互試験に利用可能とした。
+     コンパイラ警告はutf8proc.c:436の1-bit→bool変換とmodel_test.cc:34の既知正サイズ比較。製品不具合とは判断していない。
+  2. 公式Unicode 17.0 GraphemeBreakTest: 766ケース全一致。
+  3. 公式NormalizationTest: 20,034行、各5入力=100,170 NFC条件を全確認。
+     同じ100,170入力でNormalizeReadingとBoundedFeatureもJSと一致。
+  4. 文脈10,886入力で状態/本文/切断フラグがJSと一致。
+     公式書記素例の各UTF-16切断点、固定seed乱数5,000例、127/128/129と1023/1024/1025等を含む。
+     うち675件はJS extractorとは独立に、公式whole-string境界から得たNFC suffix集合で切断開始点を照合。
+     全出力のNFC、well-formed、128コードポイント上限も確認。
+  5. 非正準/切断/範囲外/サロゲートUTF-8 15件をNFC・読み正規化・特徴化がすべて拒否。
+  6. 固定seedの独立INT8重みで1,200特徴入力を両modeでJS採点と比較。
+     最大絶対差1.5543122344752192e-15。かな/結合文字/NUL、長い隣接特徴、順位欠損、コスト欠損、極端な有限コストを含む。
+  7. mode byte全256値を検査。0-3のみ受理し、未学習headはScore=0。
+  8. 7尺度×13境界=91例をJS Float32有限性条件と比較。
+     ±0、負、NaN、±Infinity、最小subnormal、最小normal、Float32丸めの∞境界の上下で一致。
+  9. magic/形式版/Unicode版/reserved/長さ/hash形式/各重み領域の-128等33破損例が拒否。
+     不正必須特徴10例でNaN。任意隣接特徴の欠落扱いは1,200比較にも含む。
+ 10. packaged_modelをMSVC C++20 /Jで別途コンパイル。
+     固定版公式embedded_file.h、既存Abseilのread-only include、今回生成したテスト用埋込みモデルを利用。
+     実BCrypt APIで、NUL入り一致辞書を受理、別辞書と空辞書を拒否。両headのtrained状態も確認、終了0。
+     初版ハーネスの辞書文字列長を31と誤記したため1回失敗したが、sizeof(literal)-1（32）へ修正して成功。
+     この失敗は製品不具合として数えていない。
+ 11. 同梱4ファイルを公式utf8proc v2.11.3から今回取得し、各ファイル全バイト一致。
+     SHA-256と取得元をreference-downloads.jsonに保存。HEADと製品コード変更なしも確認。
+
+再現と証跡（すべてreviews/2026-11-17-native-work配下）:
+  coverage.json: 各ファイルの物理行数、byte数、SHA-256
+  build.ps1 / build.log: C++コンパイルと既存context試験
+  probe.cc / unicode-check.mjs / unicode-results.json: Unicode・文脈検証
+  model-probe.cc / model-check.mjs / model-results.json: モード・尺度・形式・推論比較
+  package-prepare.mjs / package-build.ps1 / package-build.log / packaged-probe.cc: 埋込み・SHA-256実検証
+  download-reference.py / reference-downloads.json: 公開一次資料の取得と同梱版照合
+
+限界とメタ認知上の点検:
+  ・JSとC++が同じアルゴリズムなら共通の誤りも一致し得るため、NFCと書記素は公式期待値を別の根拠にした。
+  ・生成データを手動全行レビューしたとは言わず、上流同一性と公式コーパスによる機械検証と区別した。
+  ・有限個の切断列や数値境界の成功は、すべての文字列・CPU環境についての証明ではない。
+  ・今回のビルドはMSVCの部品検証であり、BazelによるMozc全体のクリーンビルドではない。
+    packaged試験の埋込みモデル/辞書はレビュー用fixtureで、配布モデルの品質評価や配布辞書一致確認ではない。
+  ・実アプリTSF、DLL loader lockを含む全ホスト経路、割当て失敗/API故障注入、更新/インストール、性能/常駐量はこの担当の実機合格範囲外。
+  ・文脈の非同期キャッシュや予測統合等、READMEが今後の実装範囲とする機能不足を新しいバグとは数えなかった。
+
+一次資料:
+  https://www.unicode.org/reports/tr29/tr29-47.html
+  https://www.unicode.org/Public/17.0.0/ucd/auxiliary/GraphemeBreakTest.txt
+  https://www.unicode.org/Public/17.0.0/ucd/NormalizationTest.txt
+  https://github.com/JuliaStrings/utf8proc/tree/v2.11.3
+  https://learn.microsoft.com/en-us/windows/win32/api/bcrypt/nf-bcrypt-bcrypthash
+  https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/base/embedded_file.h

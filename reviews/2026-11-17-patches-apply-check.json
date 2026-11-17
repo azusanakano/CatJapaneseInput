@@ -1,0 +1,1010 @@
+{
+  "baseline": "6e359013106f94bc056c8c39294618d9334835e0",
+  "pinnedMozc": "a4541df29db443b49f81cf54665873b68fde9efa",
+  "method": "Official pinned files fetched read-only through GitHub connector. Every unified-diff old/context line and hunk count compared against the pinned base. Apply performed in memory; no external checkout mutations. Empty context lines supported.",
+  "baseFiles": [
+    {
+      "path": "src/base/system_util.cc",
+      "gitBlobSha": "b5f4787ddba57e70366eefe6f98e172bf71f5237",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/base/system_util.cc"
+    },
+    {
+      "path": "src/data_manager/data_manager.cc",
+      "gitBlobSha": "3b466ef8fc3f31c0ce235218ae6d15604956ee59",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/data_manager/data_manager.cc"
+    },
+    {
+      "path": "src/engine/engine_converter.h",
+      "gitBlobSha": "6d061cfcaa52f29bda441da9711ab00d9a22eb35",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/engine/engine_converter.h"
+    },
+    {
+      "path": "src/win32/tip/tip_text_service.cc",
+      "gitBlobSha": "23c62a90094d90451b89717410535b825d187038",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_text_service.cc"
+    },
+    {
+      "path": "src/engine/engine.cc",
+      "gitBlobSha": "36ec213f72781969f66e6fd9466f75e4e58e9255",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/engine/engine.cc"
+    },
+    {
+      "path": "src/win32/installer/installer_oss_64bit.wxs",
+      "gitBlobSha": "d1d87948eefc928337e2b661f0d6f3ba7943b979",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/installer/installer_oss_64bit.wxs"
+    },
+    {
+      "path": "src/base/const.h",
+      "gitBlobSha": "30a5013e4fdf6708033563593efb84b449726786",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/base/const.h"
+    },
+    {
+      "path": "src/win32/base/tsf_profile.cc",
+      "gitBlobSha": "120e6dcba14c22bbed3deae79a6a33928ff60c12",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/base/tsf_profile.cc"
+    },
+    {
+      "path": "src/win32/tip/tip_display_attributes.cc",
+      "gitBlobSha": "309f4cf35bd37d3e59b605d83da1cb02f9e1aac8",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_display_attributes.cc"
+    },
+    {
+      "path": "src/win32/tip/tip_resource.rc",
+      "gitBlobSha": "2276d70b5da82dfbad996c9d0b3a84c870cc32d2",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_resource.rc"
+    },
+    {
+      "path": "src/win32/installer/BUILD.bazel",
+      "gitBlobSha": "1c31b51597a56b34a2919776426f1dc815e99b93",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/installer/BUILD.bazel"
+    },
+    {
+      "path": "src/win32/installer/build_installer.py",
+      "gitBlobSha": "4bccad8c51e5cf8c6b1cfa9531502fa984c125fa",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/installer/build_installer.py"
+    },
+    {
+      "path": "src/build_tools/mozc_win32_resource_template.rc",
+      "gitBlobSha": "deec834227522942133397f8b0fb211bcf95b85a",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/build_tools/mozc_win32_resource_template.rc"
+    },
+    {
+      "path": "src/server/BUILD.bazel",
+      "gitBlobSha": "41337f1ead03e95197647c05adfa5ff00c20ac68",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/server/BUILD.bazel"
+    },
+    {
+      "path": "src/server/mozc_server.rc",
+      "gitBlobSha": "328ed404de80ada1c9e8a37f3c88f306d971ce1e",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/server/mozc_server.rc"
+    },
+    {
+      "path": "src/renderer/win32/BUILD.bazel",
+      "gitBlobSha": "17723c3b7e0a571f9563bef6cfeec083483bce52",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/renderer/win32/BUILD.bazel"
+    },
+    {
+      "path": "src/renderer/win32/mozc_renderer.rc",
+      "gitBlobSha": "ae780c4112e01d47611c5c1d79140f8e952289c8",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/renderer/win32/mozc_renderer.rc"
+    },
+    {
+      "path": "src/win32/broker/BUILD.bazel",
+      "gitBlobSha": "276e923465aea5b7db55fd5ba7e69c67316f231f",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/broker/BUILD.bazel"
+    },
+    {
+      "path": "src/win32/broker/mozc_broker.rc",
+      "gitBlobSha": "fb268f5519eb2c90d88aae49a92594fd628db087",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/broker/mozc_broker.rc"
+    },
+    {
+      "path": "src/win32/cache_service/BUILD.bazel",
+      "gitBlobSha": "50c6197e36a66eb3b6fbc4c19b08a8c5c38d45b0",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/cache_service/BUILD.bazel"
+    },
+    {
+      "path": "src/win32/cache_service/mozc_cache_service.rc",
+      "gitBlobSha": "1400e3bb869b48f7e955e05b30957d0314cc3873",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/cache_service/mozc_cache_service.rc"
+    },
+    {
+      "path": "src/gui/tool/BUILD.bazel",
+      "gitBlobSha": "1c4726b0c9a9cd2e89514124a974f4b32412d30e",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/gui/tool/BUILD.bazel"
+    },
+    {
+      "path": "src/gui/tool/mozc_tool.rc",
+      "gitBlobSha": "f0086dbd76c4481e37ef78c30c671a3dc73ef440",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/gui/tool/mozc_tool.rc"
+    },
+    {
+      "path": "src/rewriter/version_rewriter_test.cc",
+      "gitBlobSha": "40ad7912e3d1c1f0cc2fb9f9e73e22f635223d4a",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/rewriter/version_rewriter_test.cc"
+    },
+    {
+      "path": "src/data/installer/credits_en.html",
+      "gitBlobSha": "31d1dd2e24a3b7a7aefa0f506828e997cc8eba93",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/data/installer/credits_en.html"
+    },
+    {
+      "path": "src/version.bzl",
+      "gitBlobSha": "2a6c21db765c88dd98e3e7b8efbb55fafced953a",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/version.bzl"
+    },
+    {
+      "path": "src/client/client.cc",
+      "gitBlobSha": "e794a7e21932c847a85a88296a979e1660e1a555",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/client/client.cc"
+    },
+    {
+      "path": "src/converter/segments.h",
+      "gitBlobSha": "dff1663256c2e4c9ec81a1a36415b5fe6a8f98b0",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/converter/segments.h"
+    },
+    {
+      "path": "src/data_manager/data_manager.h",
+      "gitBlobSha": "c43693f82dff148b353d77ec1b3a30ba7eabad22",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/data_manager/data_manager.h"
+    },
+    {
+      "path": "src/engine/BUILD.bazel",
+      "gitBlobSha": "6ace13e21fe7eeee89ec7561755691fef93de0e9",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/engine/BUILD.bazel"
+    },
+    {
+      "path": "src/engine/engine.h",
+      "gitBlobSha": "c81b037282478fc85767f47432481dd3e5e8c5a4",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/engine/engine.h"
+    },
+    {
+      "path": "src/engine/engine_converter.cc",
+      "gitBlobSha": "0c322b8d09a1dc555c3f239642666a88e4e3697d",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/engine/engine_converter.cc"
+    },
+    {
+      "path": "src/engine/engine_converter_interface.h",
+      "gitBlobSha": "f8e3b43ec78156fc40afb0e5d3f269177eb89aed",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/engine/engine_converter_interface.h"
+    },
+    {
+      "path": "src/protocol/commands.proto",
+      "gitBlobSha": "8f1c972fc8473e278660561b7509c08e0003f232",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/protocol/commands.proto"
+    },
+    {
+      "path": "src/session/session.cc",
+      "gitBlobSha": "1cde8921f2b629277068322888dd32b007a5df21",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/session/session.cc"
+    },
+    {
+      "path": "src/session/session_server.cc",
+      "gitBlobSha": "0f989ee51a95cec3c07fc5f8c52df2efb3839be1",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/session/session_server.cc"
+    },
+    {
+      "path": "src/win32/tip/BUILD.bazel",
+      "gitBlobSha": "c71e7738e668ef001dd75acb533cd70ad1c1db64",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/BUILD.bazel"
+    },
+    {
+      "path": "src/win32/tip/tip_keyevent_handler.cc",
+      "gitBlobSha": "618c232e946757e40ca5dc8f153b3267e7f2a1f5",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_keyevent_handler.cc"
+    },
+    {
+      "path": "src/win32/tip/tip_range_util.cc",
+      "gitBlobSha": "cb91ea4d96d40688c648f9ddde9d9ebaedbcc1ab",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_range_util.cc"
+    },
+    {
+      "path": "src/win32/tip/tip_range_util.h",
+      "gitBlobSha": "8fae434c291d9475b3dd2625442739ba64a2ef12",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_range_util.h"
+    },
+    {
+      "path": "src/win32/tip/tip_surrounding_text.cc",
+      "gitBlobSha": "af475338542a2a1c1c2124ecff850673c454bced",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_surrounding_text.cc"
+    },
+    {
+      "path": "src/win32/tip/tip_surrounding_text.h",
+      "gitBlobSha": "a03c33fa284737b47b051dce0a14d3ab16c6bd93",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_surrounding_text.h"
+    },
+    {
+      "path": "src/win32/tip/tip_surrounding_text_test.cc",
+      "gitBlobSha": "02390854847eff2867d82355d4c143c6f4bdbd3c",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/win32/tip/tip_surrounding_text_test.cc"
+    },
+    {
+      "path": "src/data_manager/oss/BUILD.bazel",
+      "gitBlobSha": "81b91abde3fa067a407e2f0fdd2d740c9e69f9dc",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/data_manager/oss/BUILD.bazel"
+    },
+    {
+      "path": "src/dictionary/text_dictionary_loader.cc",
+      "gitBlobSha": "1f55c88e0e5c5a30e7e4af2c2d21a228580d4fea",
+      "url": "https://github.com/google/mozc/blob/a4541df29db443b49f81cf54665873b68fde9efa/src/dictionary/text_dictionary_loader.cc"
+    }
+  ],
+  "hunks": [
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/base/const.h",
+      "patchLine": 8,
+      "oldLines": 7,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/base/const.h",
+      "patchLine": 20,
+      "oldLines": 35,
+      "newLines": 43,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/base/system_util.cc",
+      "patchLine": 89,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/base/tsf_profile.cc",
+      "patchLine": 102,
+      "oldLines": 19,
+      "newLines": 19,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_text_service.cc",
+      "patchLine": 136,
+      "oldLines": 35,
+      "newLines": 35,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_display_attributes.cc",
+      "patchLine": 197,
+      "oldLines": 19,
+      "newLines": 19,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_resource.rc",
+      "patchLine": 231,
+      "oldLines": 8,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_resource.rc",
+      "patchLine": 242,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_resource.rc",
+      "patchLine": 251,
+      "oldLines": 10,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_resource.rc",
+      "patchLine": 266,
+      "oldLines": 8,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_resource.rc",
+      "patchLine": 277,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/tip/tip_resource.rc",
+      "patchLine": 286,
+      "oldLines": 9,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/BUILD.bazel",
+      "patchLine": 303,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/build_installer.py",
+      "patchLine": 316,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 329,
+      "oldLines": 8,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 340,
+      "oldLines": 10,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 353,
+      "oldLines": 10,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 366,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 375,
+      "oldLines": 15,
+      "newLines": 15,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 395,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 404,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 413,
+      "oldLines": 13,
+      "newLines": 13,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/installer/installer_oss_64bit.wxs",
+      "patchLine": 430,
+      "oldLines": 21,
+      "newLines": 21,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/build_tools/mozc_win32_resource_template.rc",
+      "patchLine": 463,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/server/BUILD.bazel",
+      "patchLine": 476,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/server/mozc_server.rc",
+      "patchLine": 489,
+      "oldLines": 14,
+      "newLines": 14,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/renderer/win32/BUILD.bazel",
+      "patchLine": 510,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/renderer/win32/mozc_renderer.rc",
+      "patchLine": 523,
+      "oldLines": 14,
+      "newLines": 14,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/broker/BUILD.bazel",
+      "patchLine": 544,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/broker/mozc_broker.rc",
+      "patchLine": 557,
+      "oldLines": 14,
+      "newLines": 14,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/cache_service/BUILD.bazel",
+      "patchLine": 578,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/cache_service/mozc_cache_service.rc",
+      "patchLine": 591,
+      "oldLines": 14,
+      "newLines": 14,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/cache_service/mozc_cache_service.rc",
+      "patchLine": 608,
+      "oldLines": 8,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/win32/cache_service/mozc_cache_service.rc",
+      "patchLine": 619,
+      "oldLines": 8,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/gui/tool/BUILD.bazel",
+      "patchLine": 634,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/gui/tool/mozc_tool.rc",
+      "patchLine": 647,
+      "oldLines": 14,
+      "newLines": 14,
+      "exact": true
+    },
+    {
+      "patch": "catj-brand.patch",
+      "file": "src/rewriter/version_rewriter_test.cc",
+      "patchLine": 668,
+      "oldLines": 6,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-licenses.patch",
+      "file": "src/data/installer/credits_en.html",
+      "patchLine": 4,
+      "oldLines": 3,
+      "newLines": 101,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-package.patch",
+      "file": "src/version.bzl",
+      "patchLine": 4,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 4,
+      "oldLines": 9,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 15,
+      "oldLines": 7,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 25,
+      "oldLines": 7,
+      "newLines": 13,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 40,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 49,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 58,
+      "oldLines": 8,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/client/client.cc",
+      "patchLine": 68,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/converter/segments.h",
+      "patchLine": 80,
+      "oldLines": 6,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/data_manager/data_manager.cc",
+      "patchLine": 93,
+      "oldLines": 7,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/data_manager/data_manager.cc",
+      "patchLine": 104,
+      "oldLines": 7,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/data_manager/data_manager.h",
+      "patchLine": 118,
+      "oldLines": 6,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/data_manager/data_manager.h",
+      "patchLine": 128,
+      "oldLines": 6,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/BUILD.bazel",
+      "patchLine": 139,
+      "oldLines": 7,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/BUILD.bazel",
+      "patchLine": 151,
+      "oldLines": 6,
+      "newLines": 37,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/catj_reranker.cc",
+      "patchLine": 193,
+      "oldLines": 0,
+      "newLines": 133,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/catj_reranker.h",
+      "patchLine": 331,
+      "oldLines": 0,
+      "newLines": 22,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/catj_reranker_test.cc",
+      "patchLine": 358,
+      "oldLines": 0,
+      "newLines": 140,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine.cc",
+      "patchLine": 502,
+      "oldLines": 6,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine.cc",
+      "patchLine": 513,
+      "oldLines": 6,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine.h",
+      "patchLine": 529,
+      "oldLines": 7,
+      "newLines": 8,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine.h",
+      "patchLine": 539,
+      "oldLines": 6,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.cc",
+      "patchLine": 550,
+      "oldLines": 11,
+      "newLines": 13,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.cc",
+      "patchLine": 564,
+      "oldLines": 6,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.cc",
+      "patchLine": 577,
+      "oldLines": 9,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.cc",
+      "patchLine": 592,
+      "oldLines": 6,
+      "newLines": 37,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.h",
+      "patchLine": 633,
+      "oldLines": 6,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.h",
+      "patchLine": 644,
+      "oldLines": 7,
+      "newLines": 9,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter.h",
+      "patchLine": 655,
+      "oldLines": 6,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/engine/engine_converter_interface.h",
+      "patchLine": 666,
+      "oldLines": 6,
+      "newLines": 10,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/protocol/commands.proto",
+      "patchLine": 680,
+      "oldLines": 6,
+      "newLines": 11,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/session/session.cc",
+      "patchLine": 695,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/session/session.cc",
+      "patchLine": 704,
+      "oldLines": 7,
+      "newLines": 11,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/session/session.cc",
+      "patchLine": 717,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/session/session.cc",
+      "patchLine": 726,
+      "oldLines": 8,
+      "newLines": 18,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-server.patch",
+      "file": "src/session/session_server.cc",
+      "patchLine": 750,
+      "oldLines": 8,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/BUILD.bazel",
+      "patchLine": 5,
+      "oldLines": 7,
+      "newLines": 6,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/BUILD.bazel",
+      "patchLine": 13,
+      "oldLines": 9,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/BUILD.bazel",
+      "patchLine": 26,
+      "oldLines": 6,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_keyevent_handler.cc",
+      "patchLine": 38,
+      "oldLines": 12,
+      "newLines": 11,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_keyevent_handler.cc",
+      "patchLine": 52,
+      "oldLines": 24,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_keyevent_handler.cc",
+      "patchLine": 78,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_keyevent_handler.cc",
+      "patchLine": 87,
+      "oldLines": 19,
+      "newLines": 26,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_keyevent_handler.cc",
+      "patchLine": 124,
+      "oldLines": 7,
+      "newLines": 15,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_range_util.cc",
+      "patchLine": 145,
+      "oldLines": 27,
+      "newLines": 49,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_range_util.cc",
+      "patchLine": 196,
+      "oldLines": 32,
+      "newLines": 51,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_range_util.h",
+      "patchLine": 261,
+      "oldLines": 6,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_range_util.h",
+      "patchLine": 274,
+      "oldLines": 9,
+      "newLines": 21,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.cc",
+      "patchLine": 302,
+      "oldLines": 21,
+      "newLines": 30,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.cc",
+      "patchLine": 333,
+      "oldLines": 6,
+      "newLines": 192,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.cc",
+      "patchLine": 526,
+      "oldLines": 6,
+      "newLines": 57,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.h",
+      "patchLine": 588,
+      "oldLines": 15,
+      "newLines": 22,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.h",
+      "patchLine": 611,
+      "oldLines": 6,
+      "newLines": 11,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.h",
+      "patchLine": 623,
+      "oldLines": 6,
+      "newLines": 12,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text.h",
+      "patchLine": 636,
+      "oldLines": 6,
+      "newLines": 11,
+      "exact": true
+    },
+    {
+      "patch": "catj-context-tsf.patch",
+      "file": "src/win32/tip/tip_surrounding_text_test.cc",
+      "patchLine": 652,
+      "oldLines": 12,
+      "newLines": 58,
+      "exact": true
+    },
+    {
+      "patch": "catj-english-dictionary.patch",
+      "file": "src/data_manager/oss/BUILD.bazel",
+      "patchLine": 4,
+      "oldLines": 6,
+      "newLines": 7,
+      "exact": true
+    },
+    {
+      "patch": "catj-english-dictionary.patch",
+      "file": "src/dictionary/text_dictionary_loader.cc",
+      "patchLine": 15,
+      "oldLines": 8,
+      "newLines": 13,
+      "exact": true
+    },
+    {
+      "patch": "catj-english-dictionary.patch",
+      "file": "src/dictionary/text_dictionary_loader.cc",
+      "patchLine": 30,
+      "oldLines": 7,
+      "newLines": 7,
+      "exact": true
+    }
+  ]
+}

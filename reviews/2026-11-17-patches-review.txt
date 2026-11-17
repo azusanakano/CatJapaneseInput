@@ -1,0 +1,52 @@
+CatJapaneseInput パッチ・辞書・試験入力の独立全行レビュー
+日付: 2026-11-17
+基準: 6e359013106f94bc056c8c39294618d9334835e0
+固定版Mozc: a4541df29db443b49f81cf54665873b68fde9efa
+
+担当12ファイル、2,837物理行を全行確認した。パッチは追加・削除・コンテキストを含む。新規1件、以前のレビューから未修正のまま残る2件、計3件を以下に記す。製品コードおよび外部checkoutの変更は行っていない。親が並行して実装する既定IME機能は基準HEAD後の変更であり、このレビューには混在させていない。
+
+[P-01 / P2 / 新規] 表示した候補と異なる候補をセッション復旧後に確定する
+場所: tools/mozc/catj-context-server.patch 30–35行、特に33–34行。
+条件: 文脈で順位が変わった変換候補を表示した後、確定前にサーバー側セッションが失効する。標準のClient履歴再生が実行され、その後ユーザーがEnterで確定する。
+経路: 初回Spaceはcatj_preceding_utf16leを持ち、EngineConverter::Convertが再順位付けした後でUpdateCandidateListを実行する。Client::EnsureCallCommandは呼出し後にこのsnapshotを消してからPushHistoryを行う。失効後の次のTestSendKeyWithContextはEnsureCallCommand→EnsureSession→PlaybackHistoryを経由し、snapshotのないSpaceを再実行する。server.patch 598–604行の条件から、再生時はモデルを適用せず元の順番になる。
+実際: 文脈「夕食のため、箸を探した。\r\n」、読みhashi、Spaceで表示「箸」。隔離したサーバーセッションだけを削除してTestSendKeyWithContext(Enter)、SendKeyWithContext(Enter)すると確定値は「橋」。失効なし対照は「箸」。Spaceのsnapshot有無は対照[true]、失効[true,false]。
+TSFとの接続: 固定版のwin32/base/keyevent_handler.cc 838行でTestSendKeyWithContextを呼ぶ。パッチ後tip_keyevent_handler.cc 243–264行のOnTestKeyは応答をlast_outputに保存するが、文書へ適用する編集セッションは実行しない。OnKeyの464行がOnOutputReceivedSyncで最終出力を適用する。したがってTest応答がpreeditを含むこと自体は、表示中のcompositionが再生結果へ更新された証拠にならない。
+現実の失効経路: 固定版SessionHandler::Cleanupはlast_command_timeout既定3,600秒を超えたsessionを削除する（session_handler.cc 88、580–609行）。実プロセス停止だけが前提ではない。ただし今回その60分待機や実プロセス停止をGUIで再現したわけではない。
+期待: 復旧後もユーザーが見て選んだ表記を確定するか、失効を検出して新しい候補を表示し直し、改めて選択を求める。読みとキーだけを再生して別表記を確定してはいけない。
+修正方向: 表示済みの候補と確定対象の対応を復旧境界で検証する。文脈昇格済みsessionの自動再生が完全な状態を復元できない場合は、その確定を通さずcomposition/候補を安全に再同期する。過去の生文脈を無条件に再送する修正は、one-shot/機密性の方針との整合確認が別途必要。
+証拠: reviews/2026-11-17-patches-replay/probe.cc、rebuild-reviewed.ps1、rebuild-reviewed.log、source-provenance.json。
+検証水準: 公式固定版＋基準パッチからClient、EngineConverter、Catj rerankerの3翻訳単位を新規コンパイルした。正規化SHAが期待ソースと一致し、link mapが新規objのEnsureCallCommand/Convert/TryRerankCatjConversionを指すことを確認。新規ビルド版で対照と失効ケースが2回ともexit 0。その他のライブラリ・辞書・モデル・生成protobufは既存ビルドをread-onlyで再利用。IPCだけプロセス内adapterを使い、実Client/SessionHandler/Engineを動かした。実TSF GUIの見た目は静的追跡であり未実測。
+READMEの未実装Prepare/Apply/Ack一般の指摘ではなく、今回のsnapshot消去で既存履歴再生の決定性を失わせる具体的な誤確定である。
+
+[P-02 / P2 / 未修正を再確認] 同じ欄で位置を変えても短期変換履歴が失効しない
+場所: tools/mozc/catj-context-tsf.patch 101–104行。関連する削除106–110行、revision設定62–63行。
+条件: 同じ編集欄のフォーカスを保ち、東京を確定した後、先行文字を消す／文頭に移動して別のcompositionを開始する。
+経路: FillMozcContextForOnKeyが通常キーでは早期returnし、従来のpreceding_textも削除されている。渡すrevisionはfocus revisionだけで、欄内の選択・文字変更では変わらない。固定版EngineConverter::OnStartComposition（パッチ後1897–1909行）はpreceding_textが欠落しrevisionも同じなら履歴を残し、明示空文字またはrevision変更の場合だけリセットする。
+実際: NO_HISTORYで東京を確定後に「と」を変換すると、preceding_textなし・同じrevisionでは「都」が先頭になる。preceding_textを空文字で明示した場合、またはrevisionを1に変えた場合は「と」になる。前者は欄内移動・削除後のTSF送信形と同じで、現在位置に存在しない東京の履歴を文脈として使う。
+期待: 実際のキャレット位置／先行テキストとの連続性がない短期履歴を無効化する。
+修正方向: 確定文を常時送る必要はなく、TSFの文書・選択変更で連続性を追跡し、変わった場合にrevision更新または短期履歴のresetを送る。自然な連続入力で履歴を保つ場合と欄内移動後に破棄する場合を両方検証する。
+証拠: reviews/2026-11-17-patches-history-probe.mjs、*-history-{absent,empty,new-revision}.tsv、*-history-results.json。実session_handler_mainと辞書による3ケースともexit 0。TSF実GUIの移動イベントは未実測。
+以前のreviews/review-2026-11-16-full.mdのR01と同じ未解決事項であり、新規発見数には含めない。
+
+[P-03 / P2 / 未修正を再確認] Windows PowerShell 5.1で準備スクリプトが停止する
+場所: tools/mozc/stage-context-ime.ps1 23–24行。別の同環境の停止要因は43–44行。
+条件: Windows標準のpowershell.exe 5.1を使ってREADMEのstage-context-ime.ps1を実行する。基準READMEの前提にPowerShell 7の指定はない。
+経路: ErrorActionPreference='Stop'でgit apply --check --reverseを実行している。未適用の正常なcheckoutではreverse検査は失敗してstderrを出すが、Windows PowerShell 5.1は2>$nullのnative stderrをNativeCommandErrorとして扱うため、想定したLASTEXITCODE判定に達しない。また初期状態の5.1ではMicrosoft.VisualBasic.Stringsを参照できず、辞書変形のStrConvもTypeNotFoundになる。
+検証: C:/Windows/System32/WindowsPowerShell/v1.0/powershell.exeを明示起動し、バージョン5.1.26100.9818を記録。レビュー用の独立Git fixtureでreverse checkの通常終了値1を確認し、stageと同じ書式ではNativeCommandError、後続マーカー未出力、exit 1を確認。StrConv単独もTypeNotFound、exit 1。
+期待／修正方向: PowerShell 7を要件にするならREADMEと事前version checkで明記し、外部checkoutの変更前に止める。5.1を対応環境とするならnative stderr/終了コードを明示的に扱い、VisualBasic assemblyをロードする。
+証拠: reviews/2026-11-17-patches-stage-probe.mjs、*-stage-results.json。
+一次資料: https://learn.microsoft.com/en-us/powershell/scripting/whats-new/differences-from-windows-powershell のnative stderrとErrorActionPreferenceの互換性変更。
+以前のreviews/review-2026-11-16-full.mdのR02と同じ未解決事項であり、新規発見数には含めない。
+
+問題としなかった点と確認範囲
+6パッチの全97 hunksについて、公式固定版45ファイルに対してold/context行と行数が完全一致した（メモリ内の適用であり、外部checkoutへは適用していない）。TSF/profile GUID、登録検索、IPC・イベント・サービス・保存先・MSI製品名とビルド対象の整合を追跡した。パッケージ版メモ帳の判定、選択とcomposition所有、通常欄以外の拒否、読み取りの同期条件、UTF-16の上限・切断判定を全行精査した。
+
+サーバー側では保護候補、元の通常候補8枠、最大4文節、1回だけの左優先昇格、有限スコア、排他ロック、2ms期限、固定済み文節の除外を確認した。Engine初期化はサーバー側で行われ、DLL loader lock配下でモデルをロードする経路は見つからなかった。DataManagerのデータ寿命、モデルhash照合、EngineConverterの共有所有とClone/Undoを追跡した。モデルロードの実BCrypt検証はnative担当の証跡にもある。
+
+275辞書行を全行読み、5列と固定版の品詞IDを確認した。3文字種に展開した825行にordinalでの完全重複はなかった。PowerShellのculture依存Group-Objectで出る8組は幅・仮名等を同一視した結果であり、辞書重複として報告しない。半角濁点を保つCATJ_LITERAL_READINGは読みの正規化だけに限定され、表記の正規化は継続される。3試験fixtureの全行を読み、実サーバーの基本変換・確定の期待に照合した。
+
+全行確認後に過去レビューと比較し、既に修正された問題は再掲しなかった。READMEが明示している未実装の非同期文脈キャッシュ、予測、Prepare/Apply/Ack接続は、それ自体を新しい欠陥として扱っていない。JS/ネイティブ間のpartial/full候補差については通常変換での発生根拠が不足し、追加P2にしていない。
+
+残る限界
+実TSF GUI、OS全アプリ、MSIのinstall/upgrade/uninstall/coexistence、実機遅延と署名を網羅したわけではない。今回のreplay試験は隔離したプロセス内IPCとsession削除であり、実サーバー停止・実タイムアウト・実GUI確定を直接試験していない。全物理行のレビュー完了は、全環境で欠陥がないという保証ではない。各ファイルの行数・範囲、検証結果・未検証項目は reviews/2026-11-17-patches-coverage.json、パッチ照合は reviews/2026-11-17-patches-apply-check.json に保存した。
+

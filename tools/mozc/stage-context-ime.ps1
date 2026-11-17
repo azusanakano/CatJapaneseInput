@@ -20,7 +20,9 @@ if ($LASTEXITCODE -ne 0 -or $head -ne 'a4541df29db443b49f81cf54665873b68fde9efa'
 
 function Apply-CatjPatch([string] $Name) {
     $patch = Join-Path $PSScriptRoot $Name
-    git -C $checkout apply --check --reverse $patch 2>$null
+    # Failure is expected on a fresh checkout. Keep git from emitting stderr,
+    # which Windows PowerShell 5.1 can turn into a terminating error.
+    git -C $checkout apply --quiet --check --reverse $patch
     if ($LASTEXITCODE -eq 0) { return }
     git -C $checkout apply --check --whitespace=error $patch
     if ($LASTEXITCODE -ne 0) { throw "Patch preflight failed: $Name" }
@@ -29,6 +31,9 @@ function Apply-CatjPatch([string] $Name) {
 }
 
 $source = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../native/mozc')).Path
+if ($PSVersionTable.PSEdition -eq 'Desktop') {
+    Add-Type -AssemblyName Microsoft.VisualBasic
+}
 Apply-CatjPatch 'catj-english-dictionary.patch'
 $entries = @(
     foreach ($dictionary in @('english-dictionary.tsv', 'manga-dictionary.tsv')) {

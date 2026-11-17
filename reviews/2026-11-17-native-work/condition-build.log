@@ -1,0 +1,13 @@
+**********************************************************************
+** Visual Studio 2022 Developer PowerShell v17.14.45
+** Copyright (c) 2025 Microsoft Corporation
+**********************************************************************
+condition-probe.cc
+PASS fresh result=1
+PASS major-upgrade result=1
+PASS repair result=0
+PASS uninstall result=0
+PASS upgrade-old-removal result=0
+Literal 1=1
+Null handle literal 1=3
+Installed property with string value 0=1

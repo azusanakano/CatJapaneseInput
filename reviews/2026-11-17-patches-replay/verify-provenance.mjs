@@ -1,0 +1,21 @@
+import {readFileSync, writeFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {resolve} from 'node:path';
+import {spawnSync} from 'node:child_process';
+const root = import.meta.dirname;
+const hash = value => createHash('sha256').update(value).digest('hex');
+const normalize = text => text.replaceAll('\r\n','\n').trimEnd()+'\n';
+const expected = JSON.parse(readFileSync(resolve(root,'expected-reviewed-sources.json'),'utf8'));
+const sources = Object.entries(expected).map(([path,content])=> {
+  const absolute = resolve(root,'include',path.slice(4));
+  const actual = readFileSync(absolute,'utf8');
+  return {path,absolute,sha256:hash(actual),normalizedSha256:hash(normalize(actual)),expectedNormalizedSha256:hash(normalize(content)),matchesOfficialPlusReviewPatch:normalize(actual)===normalize(content)};
+});
+const linkMap = readFileSync(resolve(root,'probe-reviewed.map'),'utf8');
+const symbols = linkMap.split(/\r?\n/).filter(line=>/EnsureCallCommand|PlaybackHistory|TryRerankCatjConversion|Convert@EngineConverter/.test(line));
+const binary = resolve(root,'probe-reviewed.exe');
+const run = spawnSync(binary,[resolve(root,'profile-provenance-check')], {encoding:'utf8'});
+const evidence = {baseline:'6e359013106f94bc056c8c39294618d9334835e0',pinnedMozc:'a4541df29db443b49f81cf54665873b68fde9efa',sources,symbols,binary:{path:binary,sha256:hash(readFileSync(binary))},execution:{status:run.status,stdout:run.stdout,stderr:run.stderr},scope:'The three changed translation units were freshly compiled from official pinned source plus the baseline patch. Other Mozc/dependency libraries and generated protobuf were reused read-only. In-process IPC adapter uses the real Client, SessionHandler and Engine, deletes only its isolated session. No actual TSF UI or installed service was exercised.'};
+writeFileSync(resolve(root,'source-provenance.json'),JSON.stringify(evidence,null,2)+'\n');
+console.log(JSON.stringify(evidence,null,2));
+if (sources.some(source=>!source.matchesOfficialPlusReviewPatch)||run.status!==0||!symbols.some(line=>line.includes('EnsureCallCommand')&&line.includes('client-reviewed.obj'))||!symbols.some(line=>line.includes('TryRerankCatjConversion')&&line.includes('catj_reranker-reviewed.obj'))) process.exitCode=1;

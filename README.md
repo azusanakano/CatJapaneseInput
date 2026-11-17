@@ -80,7 +80,17 @@ try {
 }
 ```
 
-成果物は Mozc の `src/bazel-bin/win32/installer/CatJapaneseInput64.msi` です。TSF 登録には管理者権限を使います。メモ帳で CatJapaneseInput とひらがなモードを選び、`n i h o n n g o` を個別に押し、`にほんご` が未確定入力として出ることを確認します。Space で `日本語` に変換し、Enter で確定します。
+成果物は Mozc の `src/bazel-bin/win32/installer/CatJapaneseInput64.msi` です。TSF 登録には管理者権限を使います。このソースからビルドした MSI は、新規インストールとメジャーアップグレードの完了時に、インストールを実行したユーザーの CatJapaneseInput を既定の日本語入力に設定します。Windows の `InstallLayoutOrTip` の `ILOT_DEFPROFILE` を使います。修復実行では、その後ユーザーが選んだ既定設定を維持します。[Windows API の仕様](https://learn.microsoft.com/en-us/windows/win32/tsf/installlayoutortip)
+
+SYSTEM などのサービスアカウントでの導入や、実行ユーザーを判別できない場合はユーザー設定の対象外です。Windows API による設定に失敗した場合は MSI ログに記録されます。また、管理ポリシーなどで MSI のロールバックを無効にすると、完了時の設定処理も実行されません。これらの場合は Windows のキーボード設定から CatJapaneseInput を選択してください。[ロールバック無効時の仕様](https://learn.microsoft.com/en-us/windows/win32/msi/rollbackdisabled)
+
+メモ帳で CatJapaneseInput とひらがなモードを確認し、`n i h o n n g o` を個別に押し、`にほんご` が未確定入力として出ることを確認します。Space で `日本語` に変換し、Enter で確定します。
+
+インストーラーの既定設定処理は、MSVC Build Tools 2022 と PowerShell 7 の環境で次のように検証できます。固定版 Mozc の試験用ソースに実際のパッチを適用し、設定関数をコンパイルして確認します。MSI の実行条件は Windows Installer の制限付きセッションで評価し、端末の既定入力は変更しません。
+
+```powershell
+.\test\default-input.test.ps1
+```
 
 Bazel がシンボリックリンク作成権限で停止する場合は、起動オプションの `--nowindows_enable_symlinks` を `build` の前に付けます。Bazel 9.0.2 はこの設定で対象ファイルのコピーを使います。
 
@@ -116,7 +126,7 @@ bazelisk --nowindows_enable_symlinks build --config=release_build --platforms=//
 bazelisk --nowindows_enable_symlinks test --config=release_build --platforms=//:windows-x86_64 //catj:context_test //engine:catj_reranker_test //win32/tip:tip_surrounding_text_test
 ```
 
-メモ帳で「川を渡るため、橋を探した。」または「夕食のため、箸を探した。」を1行目に置き、2行目で `h a s h i` → Space を押して先頭候補を比べます。このモデルは動作確認用です。設計書の非同期文脈キャッシュ、予測の再順位付けと期限管理、Prepare／Apply／Ack の実アプリ接続は引き続き実装範囲です。
+メモ帳で「川を渡るため、橋を探した。」または「夕食のため、箸を探した。」を1行目に置き、2行目で `h a s h i` → Space を押して先頭候補を比べます。文脈を使った変換中にサーバーセッションが失われた場合は、復旧時に未確定の入力を取り消します。このモデルは動作確認用です。設計書の非同期文脈キャッシュ、予測の再順位付けと期限管理、Prepare／Apply／Ack の実アプリ接続は引き続き実装範囲です。
 
 サーバーの変換と確定を単独で再現する場合は、同じ条件で `//session:session_handler_main` をビルドします。`src/bazel-bin/session/session_handler_main.exe` に `--dictionary=oss --test --profile=<未作成の一時ディレクトリの絶対パス> --input=<試験ファイルの絶対パス>` を渡します。[文脈変換](test/fixtures/mozc-context-smoke.tsv)、[英字変換](test/fixtures/mozc-english-conversion.tsv)、[漫画の技名変換](test/fixtures/mozc-manga-conversion.tsv)を別々のプロファイルで試せます。
 

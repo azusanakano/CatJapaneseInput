@@ -1,0 +1,30 @@
+既定の日本語入力設定 — 2026-11-17
+
+依頼: インストール時に CatJapaneseInput をデフォルトの日本語入力にする。
+実装判断: MSI の既存 EnableTipProfile commit action (Impersonate=yes) を使う。
+InstallLayoutOrTip の ILOT_DEFPROFILE で、インストールを実行した利用者の
+CatJapaneseInput プロファイルを有効化し既定にする。新規と major upgrade
+で実行し、repair と uninstall では既定設定を変更しない。
+サービスアカウントとアカウント判定失敗時はユーザー設定を変更しない。
+Windows API の失敗は MSI ログに残すが、ファイルインストールの成功を覆さない。
+
+比較した方式: SYSTEM の RegisterTIP から設定すると対象利用者が異なる。
+別 PowerShell 起動は追加依存と引用処理が必要。既存 input.dll 呼出しが最小。
+インストール済みPCへの設定変更やMSIの実行は、このコード変更には含めない。
+
+作業:
+1. 固定版の元ファイルを試験fixtureとし、brand.patchを一時コピーへ実適用。
+2. 現在の EnableTipProfile をコンパイルして OS 設定とアカウント/ログ境界を置換し、
+   利用者・サービス・失敗時の動作を確認する。MSI条件はWindowsの評価器で確認。
+3. 先に新規機能の失敗を確認し、brand.patchの関数と実行条件を変更する。
+4. READMEを更新し、関連試験と既存全Node試験を実行、独立レビューする。
+
+レビュー開始時HEAD: 6e35901。実装ブランチ: codex/default-japanese-input。
+元の全行レビューは別成果物に記録する。レビュー所見はこの機能変更へ混ぜない。
+
+完了時の追加判断:
+thread tokenを優先し、ERROR_NO_TOKENの場合だけprocess tokenへfallbackする。
+取得した実効tokenのSession 0と組み込みサービスを除外し、取得失敗時も設定しない。
+独立レビューのログ検証とrollback無効時の説明の指摘も反映した。
+最終19試験PASS。全Node試験は56 PASS/0 FAIL/1 SKIP、配布処理5 PASS。
+MSI全体の再ビルド、署名、実インストール、実OS設定変更は未実施。

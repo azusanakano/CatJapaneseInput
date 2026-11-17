@@ -1,0 +1,106 @@
+{
+  "head": "6e359013106f94bc056c8c39294618d9334835e0",
+  "scope": "model-ranking-evaluation",
+  "fileCount": 14,
+  "physicalLineCount": 1342.0,
+  "files": [
+    {
+      "path": "lib/candidate.mjs",
+      "physicalLines": 10,
+      "reviewedStart": 1,
+      "reviewedEnd": 10,
+      "sha256": "63a828ac0bbe3a498a6a73a1dfecf59d17d422e39920eeeff6ca27ab12efb17f"
+    },
+    {
+      "path": "lib/model.mjs",
+      "physicalLines": 289,
+      "reviewedStart": 1,
+      "reviewedEnd": 289,
+      "sha256": "7adde83b2815a407d26cb30fcea6f50eb147013f9621c5f15836e83e005bd204"
+    },
+    {
+      "path": "lib/ranking.mjs",
+      "physicalLines": 149,
+      "reviewedStart": 1,
+      "reviewedEnd": 149,
+      "sha256": "b36611dcdcf405eccc8a99f608913c5b389c0a23e1dcbfbc0212c2a7fb2f729f"
+    },
+    {
+      "path": "lib/evaluate.mjs",
+      "physicalLines": 178,
+      "reviewedStart": 1,
+      "reviewedEnd": 178,
+      "sha256": "931fc12df5683e4e1f36a8bb88001cfb32d40ec4a4349a6ab34a8556dde5baea"
+    },
+    {
+      "path": "tools/train.mjs",
+      "physicalLines": 48,
+      "reviewedStart": 1,
+      "reviewedEnd": 48,
+      "sha256": "f2d04c3b8a07e95c7a381f214b3184f209b638d359a3980d3aafde8ac95ab3e5"
+    },
+    {
+      "path": "tools/evaluate.mjs",
+      "physicalLines": 94,
+      "reviewedStart": 1,
+      "reviewedEnd": 94,
+      "sha256": "be6dd32b4c235aded33add1a208cd53bb8ba906a4ced5640b354913c7bc8198a"
+    },
+    {
+      "path": "tools/samples.mjs",
+      "physicalLines": 17,
+      "reviewedStart": 1,
+      "reviewedEnd": 17,
+      "sha256": "0b8e19844e625e446ae332fc3c092b19af504c9500c05e74baa99afcf8d4b433"
+    },
+    {
+      "path": "tools/mozc/export-model.mjs",
+      "physicalLines": 42,
+      "reviewedStart": 1,
+      "reviewedEnd": 42,
+      "sha256": "3e1cdb9fa4db047e04fe5d0106db8616623886932e188dad1ac80b4c422844cc"
+    },
+    {
+      "path": "tools/mozc/export-model.test.mjs",
+      "physicalLines": 63,
+      "reviewedStart": 1,
+      "reviewedEnd": 63,
+      "sha256": "c65451aba0fbcac0f29ac038c86527912621739c815f12444647d4a648371858"
+    },
+    {
+      "path": "test/model.test.mjs",
+      "physicalLines": 86,
+      "reviewedStart": 1,
+      "reviewedEnd": 86,
+      "sha256": "3210c5285fec805bb47fa2d52a82c6baf7ab97ba433eb7420cf6f2978c0f3c10"
+    },
+    {
+      "path": "test/ranking.test.mjs",
+      "physicalLines": 210,
+      "reviewedStart": 1,
+      "reviewedEnd": 210,
+      "sha256": "6e789deb703461ed6b659e672d9a6eed5f6b42b81515dd178c582233b74101ad"
+    },
+    {
+      "path": "test/evaluate.test.mjs",
+      "physicalLines": 147,
+      "reviewedStart": 1,
+      "reviewedEnd": 147,
+      "sha256": "4a530bbb275029b603759438a744715ac3104b8fb138813e135a0ef5caf608a2"
+    },
+    {
+      "path": "test/fixtures/candidates.jsonl",
+      "physicalLines": 3,
+      "reviewedStart": 1,
+      "reviewedEnd": 3,
+      "sha256": "d777d98e2cf791c321a84b4cf2367965e7163ab3be72b095922ef4f03f139d2f"
+    },
+    {
+      "path": "native/mozc/smoke-training-input.jsonl",
+      "physicalLines": 6,
+      "reviewedStart": 1,
+      "reviewedEnd": 6,
+      "sha256": "0c26bf314e16daff02fd312b322daed9c4d1feed656421470f5ca702a0f154dd"
+    }
+  ]
+}

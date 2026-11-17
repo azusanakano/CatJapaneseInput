@@ -1,8 +1,9 @@
 diff --git a/src/client/client.cc b/src/client/client.cc
+index e794a7e..5ecc11b 100644
 --- a/src/client/client.cc
 +++ b/src/client/client.cc
-@@ -248,9 +248,7 @@
- 
+@@ -248,9 +248,7 @@ void Client::DumpHistorySnapshot(const absl::string_view filename,
+
    output << "---- Start history snapshot for " << label << std::endl;
    output << "Version " << Version::GetMozcVersion() << std::endl;
 -  for (size_t i = 0; i < history_inputs_.size(); ++i) {
@@ -11,8 +12,8 @@ diff --git a/src/client/client.cc b/src/client/client.cc
 +  output << "History entries: " << history_inputs_.size() << std::endl;
    output << "---- End history snapshot for " << label << std::endl;
  }
- 
-@@ -265,7 +263,8 @@
+
+@@ -265,7 +263,8 @@ void Client::PlaybackHistory() {
    for (size_t i = 0; i < history_inputs_.size(); ++i) {
      history_inputs_[i].set_id(id_);
      if (!Call(history_inputs_[i], &output)) {
@@ -22,12 +23,57 @@ diff --git a/src/client/client.cc b/src/client/client.cc
        break;
      }
    }
-@@ -391,7 +390,13 @@
+@@ -381,17 +380,58 @@ bool Client::CheckVersionOrRestartServer() {
+   return true;
+ }
+
++bool Client::CancelLostCatjComposition(const commands::Input& input,
++                                      commands::Output* output) {
++  if (catj_composition_ != CatjComposition::kLost) return false;
++  if (input.type() == commands::Input::SEND_COMMAND) {
++    switch (input.command().type()) {
++      case commands::SessionCommand::SUBMIT:
++      case commands::SessionCommand::COMMIT_RAW_TEXT:
++      case commands::SessionCommand::SUBMIT_CANDIDATE:
++      case commands::SessionCommand::SELECT_CANDIDATE:
++      case commands::SessionCommand::HIGHLIGHT_CANDIDATE:
++      case commands::SessionCommand::CONVERT_PREV_PAGE:
++      case commands::SessionCommand::CONVERT_NEXT_PAGE:
++      case commands::SessionCommand::MOVE_CURSOR:
++        break;
++      default:
++        return false;
++    }
++  }
++
++  // The key test must be consumed so TSF calls OnKey. Only the real
++  // operation applies this empty output to end the old composition.
++  output->Clear();
++  output->set_id(id_);
++  output->set_consumed(true);
++  if (input.type() != commands::Input::TEST_SEND_KEY) {
++    catj_composition_ = CatjComposition::kNone;
++  }
++  return true;
++}
++
+ bool Client::EnsureCallCommand(commands::Input* input,
+                                commands::Output* output) {
+   if (!EnsureSession()) {
+     LOG(ERROR) << "EnsureSession failed";
+     return false;
+   }
++  if (CancelLostCatjComposition(*input, output)) return true;
+
    InitInput(input);
    output->set_id(0);
- 
+
 -  if (!CallAndCheckVersion(*input, output)) {  // server is not running
 +  const bool delivered = CallAndCheckVersion(*input, output);
++  const bool used_catj_snapshot =
++      delivered && output->id() == input->id() &&
++      input->type() == commands::Input::SEND_KEY &&
++      input->context().has_catj_preceding_utf16le();
 +  // A one-shot snapshot must not enter history or a restarted session.
 +  if (input->has_context()) {
 +    input->mutable_context()->clear_catj_preceding_utf16le();
@@ -37,27 +83,68 @@ diff --git a/src/client/client.cc b/src/client/client.cc
      LOG(ERROR) << "Call command failed";
    } else if (output->id() != input->id()) {  // invalid ID
      LOG(ERROR) << "Session id is void. re-issue session id";
-@@ -631,7 +636,7 @@
+@@ -406,6 +446,7 @@ bool Client::EnsureCallCommand(commands::Input* input,
+   if (server_status_ == SERVER_SHUTDOWN ||
+       server_status_ == SERVER_INVALID_SESSION) {
+     if (EnsureSession()) {
++      if (CancelLostCatjComposition(*input, output)) return true;
+       // playback the history to restore the previous state.
+       PlaybackHistory();
+       InitInput(input);
+@@ -433,6 +474,19 @@ bool Client::EnsureCallCommand(commands::Input* input,
+     }
+   }
+
++  if (input->type() != commands::Input::TEST_SEND_KEY &&
++      output->id() == id_ &&
++      output->error_code() == commands::Output::SESSION_SUCCESS &&
++      output->has_consumed()) {
++    if (used_catj_snapshot && output->consumed() && output->has_preedit()) {
++      catj_composition_ = CatjComposition::kContextual;
++    } else if (catj_composition_ == CatjComposition::kLost ||
++               (catj_composition_ == CatjComposition::kContextual &&
++                !output->has_preedit())) {
++      ResetHistory();
++      catj_composition_ = CatjComposition::kNone;
++    }
++  }
+   PushHistory(*input, *output);
+   return true;
  }
- 
+@@ -480,6 +534,12 @@ bool Client::CreateSession() {
+   }
+
+   id_ = output.id();
++  if (catj_composition_ == CatjComposition::kContextual) {
++    // Key history cannot recreate the candidates chosen using the one-shot
++    // context. Drop the history before replaying any candidate selections.
++    ResetHistory();
++    catj_composition_ = CatjComposition::kLost;
++  }
+   return true;
+ }
+
+@@ -631,7 +691,7 @@ bool Client::CallAndCheckVersion(const commands::Input& input,
+ }
+
  bool Client::Call(const commands::Input& input, commands::Output* output) {
 -  MOZC_VLOG(2) << "commands::Input: " << std::endl << input;
 +  MOZC_VLOG(2) << "Calling command type: " << input.type();
- 
+
    // don't repeat Call() if the status is either
    // SERVER_FATAL, SERVER_TIMEOUT, or SERVER_BROKEN_MESSAGE
-@@ -692,7 +697,7 @@
+@@ -692,7 +752,7 @@ bool Client::Call(const commands::Input& input, commands::Output* output) {
    }
- 
+
    if (!client->Call(request, &response_, timeout_)) {
 -    LOG(ERROR) << "Call failure" << input.DebugString();
 +    LOG(ERROR) << "IPC call failed for command type: " << input.type();
      if (client->GetLastIPCError() == IPC_TIMEOUT_ERROR) {
        server_status_ = SERVER_TIMEOUT;
      } else {
-@@ -703,8 +708,7 @@
+@@ -703,8 +763,7 @@ bool Client::Call(const commands::Input& input, commands::Output* output) {
    }
- 
+
    if (!output->ParseFromString(response_)) {
 -    LOG(ERROR) << "Parse failure of the result of the request:"
 -               << input.DebugString();
@@ -65,15 +152,103 @@ diff --git a/src/client/client.cc b/src/client/client.cc
      server_status_ = SERVER_BROKEN_MESSAGE;
      return false;
    }
-@@ -715,7 +719,7 @@
+@@ -715,7 +774,7 @@ bool Client::Call(const commands::Input& input, commands::Output* output) {
           server_status_ == SERVER_UNKNOWN /* during StartServer() */)
        << " " << server_status_;
- 
+
 -  MOZC_VLOG(2) << "commands::Output: " << std::endl << *output;
 +  MOZC_VLOG(2) << "Received result for command type: " << input.type();
- 
+
    return true;
  }
+diff --git a/src/client/client.h b/src/client/client.h
+index 99e212f..7ce010a 100644
+--- a/src/client/client.h
++++ b/src/client/client.h
+@@ -201,6 +201,8 @@ class Client : public ClientInterface {
+   // This method automatically re-launch mozc_server and
+   // re-issue session id if it is not available.
+   bool EnsureCallCommand(commands::Input* input, commands::Output* output);
++  bool CancelLostCatjComposition(const commands::Input& input,
++                                 commands::Output* output);
+
+   // The most primitive Call method
+   // This method won't change the server_status_ even
+@@ -253,6 +255,8 @@ class Client : public ClientInterface {
+   uint32_t server_process_id_;
+   std::string server_product_version_;
+   std::vector<commands::Input> history_inputs_;
++  enum class CatjComposition { kNone, kContextual, kLost };
++  CatjComposition catj_composition_ = CatjComposition::kNone;
+   // List of key combinations used in the direct input mode.
+   std::vector<KeyInformation> direct_mode_keys_;
+   // Remember the composition mode of input session for playback.
+diff --git a/src/client/client_test.cc b/src/client/client_test.cc
+index 08a0e13..26886ce 100644
+--- a/src/client/client_test.cc
++++ b/src/client/client_test.cc
+@@ -1147,6 +1147,61 @@ TEST_F(SessionPlaybackTest, PushAndResetHistoryWithDirectTest) {
+   EXPECT_EQ(history.size(), 0);
+ }
+
++TEST_F(SessionPlaybackTest, ContextualConversionCannotCommitAfterSessionLoss) {
++  constexpr int kOldId = 123;
++  constexpr int kNewId = 456;
++  ASSERT_TRUE(SetupConnection(kOldId));
++
++  commands::KeyEvent key;
++  key.set_special_key(commands::KeyEvent::SPACE);
++  commands::Context context;
++  context.set_catj_preceding_utf16le(std::string("a\0", 2));
++  commands::Output mock_output;
++  mock_output.set_id(kOldId);
++  mock_output.set_consumed(true);
++  auto* preedit = mock_output.mutable_preedit();
++  preedit->set_cursor(5);
++  auto* segment = preedit->add_segment();
++  segment->set_value("shown");
++  segment->set_value_length(5);
++  segment->set_annotation(commands::Preedit::Segment::HIGHLIGHT);
++  SetMockOutput(mock_output);
++  commands::Output output;
++  ASSERT_TRUE(client_->SendKeyWithContext(key, context, &output));
++  ASSERT_TRUE(output.has_preedit());
++  std::vector<commands::Input> history;
++  client_peer().GetHistoryInputs(&history);
++  ASSERT_FALSE(history.empty());
++  EXPECT_FALSE(history.back().context().has_catj_preceding_utf16le());
++
++  mock_output.clear_preedit();
++  mock_output.set_id(kNewId);
++  mock_output.mutable_result()->set_type(commands::Result::STRING);
++  mock_output.mutable_result()->set_value("different");
++  SetMockOutput(mock_output);
++  key.set_special_key(commands::KeyEvent::ENTER);
++  for (int i = 0; i < 2; ++i) {
++    ASSERT_TRUE(client_->TestSendKey(key, &output));
++    EXPECT_TRUE(output.consumed());
++    EXPECT_FALSE(output.has_result());
++  }
++  ASSERT_TRUE(client_->SendKey(key, &output));
++  EXPECT_TRUE(output.consumed());
++  EXPECT_FALSE(output.has_result());
++  EXPECT_FALSE(output.has_preedit());
++  client_peer().GetHistoryInputs(&history);
++  EXPECT_TRUE(history.empty());
++
++  mock_output.clear_result();
++  SetMockOutput(mock_output);
++  key.Clear();
++  key.set_key_code('a');
++  EXPECT_TRUE(client_->SendKey(key, &output));
++  client_peer().GetHistoryInputs(&history);
++  ASSERT_EQ(history.size(), 1);
++  EXPECT_EQ(history.front().key().key_code(), 'a');
++}
++
+ TEST_F(SessionPlaybackTest, PlaybackHistoryTest) {
+   const int mock_id = 123;
+   EXPECT_TRUE(SetupConnection(mock_id));
 diff --git a/src/converter/segments.h b/src/converter/segments.h
 --- a/src/converter/segments.h
 +++ b/src/converter/segments.h

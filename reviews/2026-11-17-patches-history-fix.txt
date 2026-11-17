@@ -1,0 +1,56 @@
+2026-11-17 指摘2: 同一欄の編集・選択変更後に短期変換履歴が残る問題の修正
+
+製品変更: tools/mozc/catj-context-tsf.patch の追加hunk。
+固定版Mozc a4541df29db443b49f81cf54665873b68fde9efa の
+src/win32/tip/tip_edit_session_impl.cc:TipEditSessionImpl::OnEndEdit を変更した。
+既存のOnEndEditImplより前に、自IME以外が実行した編集の変更記録を確認する。
+
+ITfContext::InWriteSession(client_id)がS_OKかつTRUEなら、自IMEの編集として
+連続入力の履歴を維持する。そうでなければGetSelectionStatusで選択変更を確認し、
+変化がなければGetTextAndPropertyUpdates(TF_GTP_INCL_TEXT, nullptr, 0)で
+文字変更範囲の有無だけを確認する。選択/文字変更または記録の取得失敗で、既存の
+IncrementFocusRevisionを呼ぶ。propertyのみ/変化なしの通知では更新しない。
+修正は本文・候補・範囲を保存せず、文字列取得、追加edit session、追加IPCを行わない。
+
+既存FillMozcContextCommonは更新したrevisionを次のTestKey/Keyに設定し、
+EngineConverter::OnStartCompositionはrevisionの不一致で短期履歴をリセットする。
+このサーバー側動作は元レビューの実session_handler_main比較でも確認済み。
+既存のcomposition取消/確定・InputScope/UI処理と戻り値は変えていない。
+revisionはもともとTSFスレッド共有であり、同一スレッドの別contextへの外部変更も
+次のcompositionで保守的な履歴リセットを起こし得る。自IME編集はcontextに関係なく除外する。
+
+一次資料:
+https://learn.microsoft.com/en-us/windows/win32/api/msctf/nf-msctf-itftexteditsink-onendedit
+OnEndEditからInWriteSessionで完了した編集の実行元を判断する方法を確認。
+https://learn.microsoft.com/en-us/windows/win32/api/msctf/nf-msctf-itfcontext-inwritesession
+https://learn.microsoft.com/en-us/windows/win32/api/msctf/nf-msctf-itfeditrecord-gettextandpropertyupdates
+https://learn.microsoft.com/en-us/windows/win32/api/msctf/nf-msctf-ienumtfranges-skip
+Skip(1)は範囲があればS_OK、ない場合S_FALSEを返す。失敗も履歴無効化側へ倒す。
+
+回帰試験:
+test/context-history.test.ps1 と test/fixtures/mozc-history/。
+MSVC Build Tools 2022とPowerShell 7で実行する。
+この試験は固定版ソースの隔離コピーに実tsf.patchを適用し、実OnEndEdit関数を
+コンパイルする。Windows SDK定義のITfContext/ITfEditRecord/IEnumTfRangesの
+境界だけをfakeにし、既存後段composition/UI処理をstubにして通知の効果を検証する。
+抽出した関数のCOMポインタにはSDKのWRLを用い、完全なMozcビルドでは通常のWILを使う。
+本番TSF/ユーザー文書/インストール済みサーバーは変更しない。
+
+RED: 修正前に実行し、外部移動、選択不変の文字削除、アプリの挿入、IME編集後の
+外部編集、API失敗、後段エラーの10期待が失敗。旧コードに新しい関数がなくて
+コンパイルが失敗したのではなく、旧OnEndEditの実行結果による失敗を確認した。
+証拠: reviews/2026-11-17-patches-history-red.txt
+
+GREEN: 修正後13ケースと保全確認、計41チェックが全成功。自IMEの編集、no-op、
+propertyのみ、COM参照解放、後段処理とHRESULT、正しいclient_idも確認した。
+証拠: reviews/2026-11-17-patches-history-green.txt
+
+全Node試験: node --test、64件中62成功・2スキップ・0失敗。
+スキップはCATJ_MOZC_CHECKOUTとCATJ_NATIVE_MODEL_TESTを必要とする環境依存試験。
+証拠: reviews/2026-11-17-patches-history-node-tests.txt
+git diff --checkは成功（既存Git設定によるLF/CRLF通知のみ）。
+
+制限: この担当では実GUIでのマウス移動/削除・実IMEの連続入力は実行していない。
+OSがOnEndEditを通知することと編集元のInWriteSession判定はMicrosoftの公開契約に基づく。
+実UI・全Mozc翻訳単位のビルド・MSI再ビルドは親担当の統合検証で確認する。
+server.patch、その他製品ソース、既存外部checkout、dist、Git履歴は変更していない。
