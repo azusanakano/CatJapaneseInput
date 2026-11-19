@@ -31,7 +31,12 @@ function Apply-CatjPatch([string] $Name) {
 $source = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../native/mozc')).Path
 Apply-CatjPatch 'catj-english-dictionary.patch'
 $entries = @(
-    foreach ($dictionary in @('english-dictionary.tsv', 'manga-dictionary.tsv', 'incident-dictionary.tsv')) {
+    foreach ($dictionary in @(
+        'english-dictionary.tsv'
+        'manga-dictionary.tsv'
+        'incident-dictionary.tsv'
+        'statistics-dictionary.tsv'
+    )) {
         [IO.File]::ReadAllLines((Join-Path $source $dictionary))
     }
 )

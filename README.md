@@ -47,11 +47,13 @@ node --test
 
 ## Windows x64 用の TSF 試作パッケージ
 
-[英字表記](native/mozc/english-dictionary.tsv)、[漫画の技名](native/mozc/manga-dictionary.tsv)、[過去の事件の通称・関連語](native/mozc/incident-dictionary.tsv)の各一覧を変換辞書に組み込みます。`ゆーちゅーぶ`、`ユーチューブ`、`ﾕｰﾁｭｰﾌﾞ` などの読みを入力して Space を押すと、`YouTube` を選べます。`ぐろっく` → `Grok`、`くうひけん` → `空飛拳`、`らせんがん` → `螺旋丸` も同じ手順です。一覧の列は、ひらがなの読み、左品詞ID、右品詞ID、変換コスト、変換後の表記の順です。全角と半角のカタカナの読みはビルドの準備時に生成されます。
+[英字表記](native/mozc/english-dictionary.tsv)、[漫画の技名](native/mozc/manga-dictionary.tsv)、[過去の事件の通称・関連語](native/mozc/incident-dictionary.tsv)、[統計用語](native/mozc/statistics-dictionary.tsv)の各一覧を変換辞書に組み込みます。`ゆーちゅーぶ`、`ユーチューブ`、`ﾕｰﾁｭｰﾌﾞ` などの読みを入力して Space を押すと、`YouTube` を選べます。`ぐろっく` → `Grok`、`くうひけん` → `空飛拳`、`らせんがん` → `螺旋丸` も同じ手順です。一覧の列は、ひらがなの読み、左品詞ID、右品詞ID、変換コスト、変換後の表記の順です。全角と半角のカタカナの読みはビルドの準備時に生成されます。
 
 技名は『忍空』『ドラゴンボール』『NARUTO』『幽☆遊☆白書』『北斗の拳』から18語を登録しています。表記の確認先は、[忍空の紹介](https://animestore.docomo.ne.jp/animestore/CP/CP00000558)、[忍空の技名一覧](https://mangapedia.com/NINKU%E2%88%92%E5%BF%8D%E7%A9%BA%E2%88%92-rev9i7qts)、[ドラゴンボール公式](https://dragon-ball-official.com/news/01_3039.html)、[NARUTO公式](https://naruto-official.com/news/01_1429)、[幽☆遊☆白書の公式コラボ資料](https://am.bandainamco-am.co.jp/documents/news/2018/05/20180529_14-P-015.pdf)、[北斗の拳公式・ケンシロウ](https://hokuto-no-ken.jp/hokuto_archives/kenshiro)と[ラオウ](https://hokuto-no-ken.jp/hokuto_archives/raoh)です。
 
 過去の事件の通称や関連語を31件登録しています。`えんてん` → `円天`、`えんてんじけん` → `円天事件`、`あぐらぼくじょう` → `安愚楽牧場`、`ぐりこもりながじけん` → `グリコ・森永事件` などを選べます。表記の確認に用いた主な資料は、[国民生活センター50周年記念誌](https://www.kokusen.go.jp/pdf_dl/commemorative/50th_main.pdf)、[内閣府消費者委員会の建議](https://www.cao.go.jp/consumer/iinkaikouhyou/2019/0830_kengi.html)、[警察白書](https://www.npa.go.jp/hakusyo/h12/h120101.html)です。
+
+犯罪統計、標本調査、推定・検定などの統計用語を55件登録しています。`あんすう` → `暗数`、`けっそくち` → `欠測値`、`きむかせつ` → `帰無仮説`、`たいすうゆうど` → `対数尤度` などを選べます。主な表記は公的資料で確認しました。[法務省の犯罪被害実態（暗数）調査](https://www.moj.go.jp/housouken/houso_houso27.html)、[総務省統計局の統計的推定と統計的仮説検定](https://www.stat.go.jp/naruhodo/11_tokusei/kentei.html)、[内閣府の欠測値補完に関する調査研究](https://www.esri.cao.go.jp/jp/stat/report/report_all_detail.pdf)
 
 固定版の原本から候補を採取した後、別の TSF プロファイルを持つ CatJapaneseInput としてビルドできます。パッチで TSF のクラスとプロファイル、MSI のアップグレード識別子、IPC、サービス、設定と学習データの保存場所を分けます。
 
@@ -120,7 +122,7 @@ bazelisk --nowindows_enable_symlinks test --config=release_build --platforms=//:
 
 メモ帳で「川を渡るため、橋を探した。」または「夕食のため、箸を探した。」を1行目に置き、2行目で `h a s h i` → Space を押して先頭候補を比べます。このモデルは動作確認用です。設計書の非同期文脈キャッシュ、予測の再順位付けと期限管理、Prepare／Apply／Ack の実アプリ接続は引き続き実装範囲です。
 
-サーバーの変換と確定を単独で再現する場合は、同じ条件で `//session:session_handler_main` をビルドします。`src/bazel-bin/session/session_handler_main.exe` に `--dictionary=oss --test --profile=<未作成の一時ディレクトリの絶対パス> --input=<試験ファイルの絶対パス>` を渡します。[文脈変換](test/fixtures/mozc-context-smoke.tsv)、[英字変換](test/fixtures/mozc-english-conversion.tsv)、[漫画の技名変換](test/fixtures/mozc-manga-conversion.tsv)、[事件関連語の変換](test/fixtures/mozc-incident-conversion.tsv)を別々のプロファイルで試せます。
+サーバーの変換と確定を単独で再現する場合は、同じ条件で `//session:session_handler_main` をビルドします。`src/bazel-bin/session/session_handler_main.exe` に `--dictionary=oss --test --profile=<未作成の一時ディレクトリの絶対パス> --input=<試験ファイルの絶対パス>` を渡します。[文脈変換](test/fixtures/mozc-context-smoke.tsv)、[英字変換](test/fixtures/mozc-english-conversion.tsv)、[漫画の技名変換](test/fixtures/mozc-manga-conversion.tsv)、[事件関連語の変換](test/fixtures/mozc-incident-conversion.tsv)、[統計用語の変換](test/fixtures/mozc-statistics-conversion.tsv)を別々のプロファイルで試せます。
 
 ## 候補を評価する
 
