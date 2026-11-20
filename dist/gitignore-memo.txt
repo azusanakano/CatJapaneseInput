@@ -1,0 +1,9 @@
+# 展開済みのパッケージは配布 ZIP から復元できる。
+/CatJapaneseInput-*/CatJapaneseInput-*-Windows-*/
+
+# 試験用の複製、端末固有の Sandbox 設定、ログはローカルに置く。
+/CatJapaneseInput-*/QA/
+
+# 署名と再梱包の作業ファイルは実行時に作る。
+/CatJapaneseInput-*/.package-*/
+/CatJapaneseInput-*/.package.lock
