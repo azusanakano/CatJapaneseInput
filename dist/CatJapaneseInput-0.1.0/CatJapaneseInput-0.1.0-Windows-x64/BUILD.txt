@@ -1,0 +1,8 @@
+CatJapaneseInput 0.1.0  /  Windows x64
+MSI 3.35.6359.100
+Mozc a4541df29db443b49f81cf54665873b68fde9efa
+Qt Base 6.9.1
+Qt source SHA-256 40caedbf83cc9a1959610830563565889878bc95f115868bbf545d1914acf28e
+Embedded INT8 model SHA-256 746bbc4985074b65718821773c9777e8c34a51ebc7e5d5ecfd1e9c37178c5dec
+utf8proc 2.11.3
+Bazel 9.0.2 / Win32 target //:windows-x86_64 / release_build

@@ -1,0 +1,15 @@
+{
+  "productName": "CatJapaneseInput",
+  "productVersion": "3.35.6361.100",
+  "productCode": "{E8C27CD3-3C02-4D4A-AF6E-3A64CD5969AE}",
+  "upgradeCode": "{14DD2EDC-A59A-48B3-B176-F9EED6F26772}",
+  "package": "C:\\Users\\user\\Desktop\\CatJapaneseInput\\dist\\CatJapaneseInput-3.35.6361\\CatJapaneseInput-3.35.6361-Windows-x64\\CatJapaneseInput-3.35.6361-Windows-x64-unsigned.msi",
+  "packageBytes": 27369472,
+  "sha256": "b0bb2478db0121a10490b88fc15af8edef488f2dcf21b0e8997cac21131901a9",
+  "dictionarySha256": "791b2fe8d179acc469406fc581812cb59380e941b80ee920ab25c4a6de9a1714",
+  "modelSha256": "ae70617420a354fe3f203e358edbb123ee6d93d35972a6d7dead525348e0799f",
+  "nativeTestTargetsPassed": 3,
+  "nodeTestsPassed": 57,
+  "sessionFixturesPassed": 3,
+  "conversionReadingsVerified": 57
+}

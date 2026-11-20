@@ -1,0 +1,1 @@
+b0bb2478db0121a10490b88fc15af8edef488f2dcf21b0e8997cac21131901a9  CatJapaneseInput-3.35.6361-Windows-x64-unsigned.msi

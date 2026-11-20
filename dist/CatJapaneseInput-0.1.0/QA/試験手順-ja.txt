@@ -1,0 +1,39 @@
+﻿CatJapaneseInput 0.1.0 クリーン環境試験
+Windows 11 x64 / MSI 3.35.6359.100
+
+Windows Sandbox を有効にした端末では、CatJapaneseInput-0.1.0-Clean-Test.wsb を
+開くと新しい Windows が起動します。入力用フォルダーは読み取り専用で共有し、
+試験結果は Results に書き出します。Sandbox の有効化中に Windows が再起動を
+求めた場合は、作業を保存してから再起動します。
+
+別のクリーンな Windows 11 x64 を使用する場合は、Input フォルダーをコピーし、
+ゲスト側で管理者の PowerShell を開いて次を実行します。
+
+$qa = (Resolve-Path -LiteralPath '.\Input').Path
+$results = New-Item -ItemType Directory -Path '.\Results' -Force
+& (Join-Path $qa 'CleanInstallTest.exe') $results.FullName
+
+実行すると、MSI の SHA-256、CatJapaneseInput の製品、TSF、サービスと
+ファイルが存在しないことを確認し、MSI を新規インストールします。
+
+入力ウィンドウが開いたら、Windows キー + Space から「日本語 CatJapaneseInput」
+を選びます。日本語が選択肢になければゲストの言語設定に日本語を追加します。
+ひらがなモードにして、入力欄で n i h o n n g o → Space → Enter と操作します。
+「日本語」の確定を確認して Verify をクリックします。入力欄と選択中の TSF
+プロファイル、試験プロセスに読み込まれた CatJapaneseInput DLL を照合します。
+
+Windows Sandbox ではメモ帳が提供されない場合があるため、入力には Windows の
+RichEdit を使います。入力画面が閉じると MSI のアンインストールを実行し、
+製品登録、TSF 登録、サービス、インストール先ファイルの削除を確認します。
+Results の日時フォルダーに result.txt、install.log、uninstall.log が残ります。
+RESULT=PASS は新規インストール・日本語入力・アンインストールが通った結果です。
+
+発行者が署名した MSI を試験する場合は、Input の MSI を署名済みファイルで
+置き換え、MSI.sha256 に署名後の SHA-256 を1行で記録します。署名と公開の手順は
+親フォルダーの「署名と公開-ja.txt」を参照してください。
+
+Windows Sandbox の有効化
+https://learn.microsoft.com/en-us/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-install
+Windows Sandbox の構成
+https://learn.microsoft.com/en-us/windows/security/application-security/application-isolation/windows-sandbox/windows-sandbox-configure-using-wsb-file
+

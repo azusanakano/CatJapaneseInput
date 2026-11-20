@@ -1,0 +1,24 @@
+{
+  "product": "CatJapaneseInput",
+  "version": "3.35.6362.100",
+  "architecture": "x64",
+  "package": "CatJapaneseInput-3.35.6362-Windows-x64-unsigned.msi",
+  "signed": false,
+  "bytes": 27361280,
+  "sha256": "5732487e778c0ca1f469a1b2bbfb576b2b7e206bd30046d5a94a6f29aac5e363",
+  "pinnedMozc": "a4541df29db443b49f81cf54665873b68fde9efa",
+  "dictionarySha256": "791b2fe8d179acc469406fc581812cb59380e941b80ee920ab25c4a6de9a1714",
+  "modelSha256": "ae70617420a354fe3f203e358edbb123ee6d93d35972a6d7dead525348e0799f",
+  "installerHelperSha256": "6bb781f7947315b36339a5c8f816dc1d452abcf0d7307da4371819224d079a1f",
+  "msiVerification": [
+    "PASS CatJapaneseInput 3.35.6362.100 (x64;1041)",
+    "PASS custom action type 1537 sequence 6599",
+    "PASS fresh install",
+    "PASS major upgrade",
+    "PASS repair",
+    "PASS uninstall",
+    "PASS old-product removal",
+    "PASS embedded helper extraction",
+    "Embedded custom action SHA-256 matches the build: 6bb781f7947315b36339a5c8f816dc1d452abcf0d7307da4371819224d079a1f"
+  ]
+}

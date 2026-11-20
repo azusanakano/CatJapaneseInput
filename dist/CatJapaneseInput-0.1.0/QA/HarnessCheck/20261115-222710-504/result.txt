@@ -1,0 +1,10 @@
+﻿Windows build=26300
+MSI_SHA256=54FA1C51A0E422F5C835B03577BDFE5B265A2921F3C22F2EC27E977A9939CDDE
+Existing CatJapaneseInput: Installed product (Registry64)
+Existing CatJapaneseInput: TSF profile (Registry64)
+Existing CatJapaneseInput: COM server (Registry64)
+Existing CatJapaneseInput: TSF profile (Registry32)
+Existing CatJapaneseInput: COM server (Registry32)
+Existing CatJapaneseInput: Cache service
+Existing CatJapaneseInput: Installed files
+RESULT=BLOCKED
